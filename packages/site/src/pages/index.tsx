@@ -4,8 +4,9 @@ import {
   ConnectButton,
   InstallFlaskButton,
   ReconnectButton,
-  SendHelloButton,
   Card,
+  PvdeCard,
+  ConfirmButtion,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import {
@@ -56,9 +57,8 @@ const CardContainer = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
-  max-width: 64.8rem;
-  width: 100%;
+  justify-content: center;
+  gap: 20px;
   height: 100%;
   margin-top: 1.5rem;
 `;
@@ -117,7 +117,7 @@ const Index = () => {
   return (
     <Container>
       <Heading>
-        Welcome to <Span>template-snap</Span>
+        Welcome to <Span>PVDE-snap</Span>
       </Heading>
       <Subtitle>
         Get started by editing <code>src/index.tsx</code>
@@ -136,7 +136,6 @@ const Index = () => {
                 'Snaps is pre-release software only available in MetaMask Flask, a canary distribution for developers with access to upcoming features.',
               button: <InstallFlaskButton />,
             }}
-            fullWidth
           />
         )}
         {!installedSnap && (
@@ -144,7 +143,7 @@ const Index = () => {
             content={{
               title: 'Connect',
               description:
-                'Get started by connecting to and installing the example snap.',
+                'Get started by connecting to and installing the PVDE snap.',
               button: (
                 <ConnectButton
                   onClick={requestSnap}
@@ -171,13 +170,15 @@ const Index = () => {
             disabled={!installedSnap}
           />
         )}
-        <Card
+      </CardContainer>
+      <CardContainer>
+        <PvdeCard
           content={{
-            title: 'Send Hello message',
+            title: 'Generate Time-Lock Puzzle Params',
             description:
-              'Display a custom message within a confirmation screen in MetaMask.',
+              'Generate params that are required for making a time-lock puzzle.',
             button: (
-              <SendHelloButton
+              <ConfirmButtion
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
               />
@@ -190,14 +191,146 @@ const Index = () => {
             !shouldDisplayReconnectButton(installedSnap)
           }
         />
-        <Notice>
-          <p>
-            Please note that the <b>snap.manifest.json</b> and{' '}
-            <b>package.json</b> must be located in the server root directory and
-            the bundle must be hosted at the location specified by the location
-            field.
-          </p>
-        </Notice>
+        <PvdeCard
+          content={{
+            title: 'Generate Time-Lock Puzzle',
+            description: 'Using the params, generate the time-lock puzzle.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Fetch Time-Lock Puzzle ZKP Param',
+            description:
+              'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Fetch Time-Lock Puzzle Proving Key',
+            description:
+              'Fetch ZKP proving key from a server in order to use it for generating a zk-proof.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Generate Time-Lock Puzzle Proof',
+            description: 'Prove time-lock puzzle.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Generate Symmetric Key',
+            description:
+              'Generate symmetric key needed for encrypting a raw transaction.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Encrypt Message',
+            description:
+              'Encrypt the raw transaction using the generated symmetric key.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Generate Encryption Proof',
+            description: 'Prove the validity of encryption.',
+            button: (
+              <ConfirmButtion
+                onClick={handleSendHelloClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <CardContainer>
+          <Notice>
+            <p>
+              Please note that the <b>snap.manifest.json</b> and{' '}
+              <b>package.json</b> must be located in the server root directory
+              and the bundle must be hosted at the location specified by the
+              location field.
+            </p>
+          </Notice>
+        </CardContainer>
       </CardContainer>
     </Container>
   );
