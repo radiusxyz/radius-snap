@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+import type { ChangeEvent } from 'react';
 import styled from 'styled-components';
 
 import {
@@ -112,6 +114,14 @@ const Index = () => {
 
   const handleSendHelloClick = async () => {
     await invokeSnap({ method: 'hello' });
+  };
+
+  const [message, setMessage] = useState('');
+  const handleInputMessageField = (
+    changeEvent: ChangeEvent<HTMLInputElement>,
+  ) => {
+    changeEvent.preventDefault();
+    setMessage(changeEvent.target.value);
   };
 
   return (
@@ -289,6 +299,7 @@ const Index = () => {
             title: 'Encrypt Message',
             description:
               'Encrypt the raw transaction using the generated symmetric key.',
+            message,
             button: (
               <ConfirmButtion
                 onClick={handleSendHelloClick}
@@ -302,6 +313,8 @@ const Index = () => {
             Boolean(installedSnap) &&
             !shouldDisplayReconnectButton(installedSnap)
           }
+          inputHandler={handleInputMessageField}
+          input
         />
         <PvdeCard
           content={{

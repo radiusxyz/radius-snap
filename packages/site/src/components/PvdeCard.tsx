@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ChangeEvent, type ReactNode } from 'react';
 import styled from 'styled-components';
 
 type PvdeCardProps = {
@@ -6,9 +6,12 @@ type PvdeCardProps = {
     title?: string;
     description: ReactNode;
     button?: ReactNode;
+    message?: string;
   };
   disabled?: boolean;
   fullWidth?: boolean;
+  input?: boolean;
+  inputHandler?: (changeEvent: ChangeEvent<HTMLInputElement>) => void;
 };
 
 const PvdeCardWrapper = styled.div<{
@@ -48,16 +51,27 @@ const Description = styled.div`
   margin-bottom: 2.4rem;
 `;
 
+const Input = styled.input`
+  padding: 5px 10px;
+`;
+
 export const PvdeCard = ({
   content,
   disabled = false,
   fullWidth,
+  input,
+  inputHandler,
 }: PvdeCardProps) => {
-  const { title, description, button } = content;
+  const { title, description, button, message } = content;
+
+  useEffect(() => {
+    console.log(message);
+  }, [message]);
   return (
     <PvdeCardWrapper fullWidth={fullWidth} disabled={disabled}>
       {title && <Title>{title}</Title>}
       <Description>{description}</Description>
+      {input && <Input value={message} onChange={inputHandler} />}
       {button}
     </PvdeCardWrapper>
   );
