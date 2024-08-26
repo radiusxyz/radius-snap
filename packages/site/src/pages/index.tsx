@@ -8,7 +8,7 @@ import {
   ReconnectButton,
   Card,
   PvdeCard,
-  ConfirmButtion,
+  PvdeButton,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import {
@@ -188,10 +188,12 @@ const Index = () => {
             description:
               'Generate params that are required for making a time-lock puzzle.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Generate
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -206,10 +208,12 @@ const Index = () => {
             title: 'Generate Time-Lock Puzzle',
             description: 'Using the params, generate the time-lock puzzle.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Generate
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -225,10 +229,12 @@ const Index = () => {
             description:
               'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Fetch
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -244,10 +250,12 @@ const Index = () => {
             description:
               'Fetch ZKP proving key from a server in order to use it for generating a zk-proof.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Fetch
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -262,10 +270,12 @@ const Index = () => {
             title: 'Generate Time-Lock Puzzle Proof',
             description: 'Prove time-lock puzzle.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Prove
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -283,10 +293,12 @@ const Index = () => {
             description:
               'Generate symmetric key needed for encrypting a raw transaction.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Generate
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -303,10 +315,12 @@ const Index = () => {
               'Encrypt the raw transaction using the generated symmetric key.',
             message,
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Encrypt
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
@@ -323,10 +337,12 @@ const Index = () => {
             title: 'Generate Encryption Proof',
             description: 'Prove the validity of encryption.',
             button: (
-              <ConfirmButtion
+              <PvdeButton
                 onClick={handleSendHelloClick}
                 disabled={!installedSnap}
-              />
+              >
+                Prove
+              </PvdeButton>
             ),
           }}
           disabled={!installedSnap}
