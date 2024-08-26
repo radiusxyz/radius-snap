@@ -16,8 +16,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   request,
 }) => {
   switch (request.method) {
-    case 'hello':
-      const name: string = 'Radius';
+    case 'hello': {
+      const name = 'Radius';
       const response = await getIndex(name);
 
       return snap.request({
@@ -37,32 +37,32 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
                 if you want to!
               </Text>
 
-              <Text>Hello, {response['result']} from the sequencer!</Text>
+              <Text>Hello, {response.result} from the sequencer!</Text>
             </Box>
           ),
         },
       });
+    }
     default:
       throw new Error('Method not found.');
   }
 };
 
-async function getIndex(name: &string) {
+async function getIndex(name: string) {
   const response = await fetch('http://127.0.0.1:10000', {
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
     method: 'POST',
     body: JSON.stringify({
-      'jsonrpc': '2.0',
-      'method': 'Index',
-      'params': [name],
-      'id': 1,
+      jsonrpc: '2.0',
+      method: 'Index',
+      params: [name],
+      id: 1,
     }),
-  })
-    .catch((error) => {
-      throw new Error(error);
-    });
+  }).catch((error) => {
+    throw new Error(error);
+  });
 
   return await response.json();
 }
