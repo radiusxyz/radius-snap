@@ -68,7 +68,9 @@ export const PvdeCard = ({
   const { title, description, button, message } = content;
 
   useEffect(() => {
-    console.log(message);
+    if (message) {
+      console.log('raw message', message);
+    }
   }, [message]);
   return (
     <PvdeCardWrapper fullWidth={fullWidth} disabled={disabled}>
