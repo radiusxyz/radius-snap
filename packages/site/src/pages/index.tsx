@@ -62,7 +62,7 @@ const CardContainer = styled.div`
   justify-content: center;
   gap: 20px;
   height: 100%;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 `;
 
 const Notice = styled.div`
@@ -275,6 +275,8 @@ const Index = () => {
             !shouldDisplayReconnectButton(installedSnap)
           }
         />
+      </CardContainer>
+      <CardContainer>
         <PvdeCard
           content={{
             title: 'Generate Symmetric Key',
@@ -334,16 +336,16 @@ const Index = () => {
             !shouldDisplayReconnectButton(installedSnap)
           }
         />
-        <CardContainer>
-          <Notice>
-            <p>
-              Please note that the <b>snap.manifest.json</b> and{' '}
-              <b>package.json</b> must be located in the server root directory
-              and the bundle must be hosted at the location specified by the
-              location field.
-            </p>
-          </Notice>
-        </CardContainer>
+      </CardContainer>
+      <CardContainer>
+        <Notice>
+          <p>
+            Please note that the <b>snap.manifest.json</b> and{' '}
+            <b>package.json</b> must be located in the server root directory and
+            the bundle must be hosted at the location specified by the location
+            field.
+          </p>
+        </Notice>
       </CardContainer>
     </Container>
   );

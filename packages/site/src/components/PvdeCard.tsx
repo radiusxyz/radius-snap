@@ -52,7 +52,10 @@ const Description = styled.div`
 `;
 
 const Input = styled.input`
-  padding: 5px 10px;
+  padding: 5px 5px;
+  border-radius: 3px;
+  border: none;
+  margin-bottom: 10px;
 `;
 
 export const PvdeCard = ({
