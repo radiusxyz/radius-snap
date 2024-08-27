@@ -113,7 +113,8 @@ const Index = () => {
     : snapsDetected;
 
   const handleSendHelloClick = async () => {
-    await invokeSnap({ method: 'hello' });
+    const response = await invokeSnap({ method: 'greeting' });
+    console.log(response);
   };
 
   const [message, setMessage] = useState('');
