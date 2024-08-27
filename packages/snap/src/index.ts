@@ -17,10 +17,37 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 }) => {
   switch (request.method) {
     // Expose a "greeting" JSON-RPC method to dapps.
-    case 'greeting': {
+    case 'generateTimeLockPuzzleParam': {
+      return `Gylman: ${origin}`;
+    }
+    case 'generateTimeLockPuzzle': {
+      return `Gylman: ${origin}`;
+    }
+    case 'fetchTimeLockPuzzleZkpParam': {
+      return `Gylman: ${origin}`;
+    }
+    case 'fetchTimeLockPuzzleProvingKey': {
+      return `Gylman: ${origin}`;
+    }
+    case 'generateTimeLockPuzzleProof': {
+      return `Gylman: ${origin}`;
+    }
+    case 'generateSymmetricKey': {
+      return `Gylman: ${origin}`;
+    }
+    case 'encryptMessage': {
       return `Gylman: ${origin}`;
     }
 
+    case 'fetchEncryptionZkpParam': {
+      return `Gylman: ${origin}`;
+    }
+    case 'fetchEncryptionProvingKey': {
+      return `Gylman: ${origin}`;
+    }
+    case 'generateEncryptionProof': {
+      return `Gylman: ${origin}`;
+    }
     default: {
       throw new Error('Method not found.');
     }

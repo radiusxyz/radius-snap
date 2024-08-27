@@ -112,8 +112,12 @@ const Index = () => {
     ? isFlask
     : snapsDetected;
 
-  const handleSendHelloClick = async () => {
-    const response = await invokeSnap({ method: 'greeting' });
+  const handleClick = async (func: string) => {
+    return await invokeSnap({ method: func });
+  };
+
+  const createClickHandler = (func: string) => async () => {
+    const response = await handleClick(func);
     console.log(response);
   };
 
@@ -190,7 +194,7 @@ const Index = () => {
               'Generate params that are required for making a time-lock puzzle.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('generateTimeLockPuzzleParam')}
                 disabled={!installedSnap}
               >
                 Generate
@@ -210,7 +214,7 @@ const Index = () => {
             description: 'Using the params, generate the time-lock puzzle.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('generateTimeLockPuzzle')}
                 disabled={!installedSnap}
               >
                 Generate
@@ -231,7 +235,7 @@ const Index = () => {
               'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('fetchTimeLockPuzzleZkpParam')}
                 disabled={!installedSnap}
               >
                 Fetch
@@ -252,7 +256,7 @@ const Index = () => {
               'Fetch ZKP proving key from a server in order to use it for generating a zk-proof.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('fetchTimeLockPuzzleProvingKey')}
                 disabled={!installedSnap}
               >
                 Fetch
@@ -272,7 +276,7 @@ const Index = () => {
             description: 'Prove time-lock puzzle.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('generateTimeLockPuzzleProof')}
                 disabled={!installedSnap}
               >
                 Prove
@@ -295,7 +299,7 @@ const Index = () => {
               'Generate symmetric key needed for encrypting a raw transaction.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('generateSymmetricKey')}
                 disabled={!installedSnap}
               >
                 Generate
@@ -317,7 +321,7 @@ const Index = () => {
             message,
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('encryptMessage')}
                 disabled={!installedSnap}
               >
                 Encrypt
@@ -335,11 +339,53 @@ const Index = () => {
         />
         <PvdeCard
           content={{
+            title: 'Fetch Encryption ZKP param',
+            description:
+              'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
+            button: (
+              <PvdeButton
+                onClick={createClickHandler('fetchEncryptionZkpParam')}
+                disabled={!installedSnap}
+              >
+                Fetch
+              </PvdeButton>
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
+            title: 'Fetch Encryption Proving Key',
+            description:
+              'Fetch ZKP proving key from a server in order to use it for generating a zk-proof of encryption.',
+            button: (
+              <PvdeButton
+                onClick={createClickHandler('fetchEncryptionProvingKey')}
+                disabled={!installedSnap}
+              >
+                Fetch
+              </PvdeButton>
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
+        <PvdeCard
+          content={{
             title: 'Generate Encryption Proof',
             description: 'Prove the validity of encryption.',
             button: (
               <PvdeButton
-                onClick={handleSendHelloClick}
+                onClick={createClickHandler('generateEncryptionProof')}
                 disabled={!installedSnap}
               >
                 Prove
