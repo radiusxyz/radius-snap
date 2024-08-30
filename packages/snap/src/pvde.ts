@@ -1,5 +1,3 @@
-import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable jsdoc/require-jsdoc */
@@ -22,13 +20,9 @@ import init, {
 let initialized = false;
 async function ensureInitialized() {
   if (!initialized) {
-    try {
-      await init();
-      // eslint-disable-next-line require-atomic-updates
-      initialized = true;
-    } catch (error) {
-      console.log('stompesi error', error);
-    }
+    await init();
+    // eslint-disable-next-line require-atomic-updates
+    initialized = true;
   }
 }
 
@@ -38,13 +32,13 @@ function uint8ArrayToHex(uint8Array: Iterable<unknown> | ArrayLike<unknown>) {
   ).join('');
 }
 
-async function readStream(res: any) {
+export async function readStream(res: any) {
   const bytes = await res.arrayBuffer();
   const uint8bytes = new Uint8Array(bytes);
   return uint8bytes;
 }
 
-async function fetchTimeLockPuzzleZkpParam() {
+export async function fetchTimeLockPuzzleZkpParam() {
   return await fetch(
     'https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/time_lock_puzzle_zkp_param.data',
     {
@@ -53,7 +47,7 @@ async function fetchTimeLockPuzzleZkpParam() {
   ).then(async (res) => readStream(res));
 }
 
-async function fetchTimeLockPuzzleProvingKey() {
+export async function fetchTimeLockPuzzleProvingKey() {
   return await fetch(
     'https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/time_lock_puzzle_zkp_proving_key.data',
     {
@@ -62,7 +56,7 @@ async function fetchTimeLockPuzzleProvingKey() {
   ).then(async (res) => readStream(res));
 }
 
-async function fetchTimeLockPuzzleVerifyingKey() {
+export async function fetchTimeLockPuzzleVerifyingKey() {
   return await fetch(
     'https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/time_lock_puzzle_zkp_verifying_key.data',
     {
@@ -71,18 +65,17 @@ async function fetchTimeLockPuzzleVerifyingKey() {
   ).then(async (res) => readStream(res));
 }
 
-async function generateTimeLockPuzzleParam() {
+export async function generateTimeLockPuzzleParam() {
   await ensureInitialized();
-  console.log('stompesi2');
   const { y_two: yTwo, ...rest } = await generate_time_lock_puzzle_param(2048);
-  console.log('stompesi3');
+
   return {
     ...rest,
     yTwo,
   };
 }
 
-async function generateTimeLockPuzzle(timeLockPuzzleParam: any) {
+export async function generateTimeLockPuzzle(timeLockPuzzleParam: any) {
   await ensureInitialized();
 
   const { yTwo, ...rest } = timeLockPuzzleParam;
@@ -100,7 +93,7 @@ async function generateTimeLockPuzzle(timeLockPuzzleParam: any) {
   ];
 }
 
-async function generateTimeLockPuzzleProof(
+export async function generateTimeLockPuzzleProof(
   timeLockPuzzleZkpParam: any,
   timeLockPuzzleZkpProvingKey: any,
   timeLockPuzzlePublicInput: any,
@@ -132,7 +125,7 @@ async function generateTimeLockPuzzleProof(
   );
 }
 
-async function verifyTimeLockPuzzleProof(
+export async function verifyTimeLockPuzzleProof(
   timeLockPuzzleZkpParam: any,
   timeLockPuzzleZkpVerifyingKey: any,
   timeLockPuzzlePublicInput: any,
@@ -163,7 +156,7 @@ async function verifyTimeLockPuzzleProof(
   );
 }
 
-async function fetchEncryptionZkpParam() {
+export async function fetchEncryptionZkpParam() {
   return await fetch(
     'https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/encryption_zkp_param.data',
     {
@@ -172,7 +165,7 @@ async function fetchEncryptionZkpParam() {
   ).then(async (res) => readStream(res));
 }
 
-async function fetchEncryptionProvingKey() {
+export async function fetchEncryptionProvingKey() {
   return await fetch(
     'https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/encryption_zkp_proving_key.data',
     {
@@ -181,7 +174,7 @@ async function fetchEncryptionProvingKey() {
   ).then(async (res) => readStream(res));
 }
 
-async function fetchEncryptionVerifyingKey() {
+export async function fetchEncryptionVerifyingKey() {
   return await fetch(
     'https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/encryption_zkp_verifying_key.data',
     {
@@ -190,12 +183,12 @@ async function fetchEncryptionVerifyingKey() {
   ).then(async (res) => readStream(res));
 }
 
-async function encryptMessage(message: any, encryptionKey: any) {
+export async function encryptMessage(message: any, encryptionKey: any) {
   await ensureInitialized();
   return encrypt(message, encryptionKey);
 }
 
-async function generateEncryptionProof(
+export async function generateEncryptionProof(
   encryptionZkpParam: any,
   encryptionProvingKey: any,
   encryptionPublicInput: any,
@@ -217,7 +210,7 @@ async function generateEncryptionProof(
   );
 }
 
-async function verifyEncryptionProof(
+export async function verifyEncryptionProof(
   encryptionZkpParam: any,
   encryptionVerifyingKey: any,
   encryptionPublicInput: any,
@@ -239,7 +232,7 @@ async function verifyEncryptionProof(
   );
 }
 
-async function solveTimeLockPuzzle(
+export async function solveTimeLockPuzzle(
   timeLockPuzzlePublicInput: any,
   timeLockPuzzleParam: any,
 ) {
@@ -253,71 +246,12 @@ async function solveTimeLockPuzzle(
   return k;
 }
 
-async function generateSymmetricKey(k: any) {
+export async function generateSymmetricKey(k: any) {
   await ensureInitialized();
   return await generate_symmetric_key(k);
 }
 
-async function decryptCipher(cipher: any, symmetricKey: any) {
+export async function decryptCipher(cipher: any, symmetricKey: any) {
   await ensureInitialized();
   return decrypt(cipher, symmetricKey);
 }
-
-/**
- * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
- *
- * @param args - The request handler args as object.
- * @param args.origin - The origin of the request, e.g., the website that
- * invoked the snap.
- * @param args.request - A validated JSON-RPC request object.
- * @returns The result of `snap_dialog`.
- * @throws If the request method is not valid for this snap.
- */
-
-export const onRpcRequest: OnRpcRequestHandler = async ({
-  origin,
-  request,
-}) => {
-  switch (request.method) {
-    // Expose a "greeting" JSON-RPC method to dapps.
-    case 'generateTimeLockPuzzleParam': {
-      console.log('stompesi: 1');
-      const result = await generateTimeLockPuzzleParam();
-      console.log(result);
-      return result;
-    }
-    case 'generateTimeLockPuzzle': {
-      return `Gylman: ${origin}`;
-    }
-    case 'fetchTimeLockPuzzleZkpParam': {
-      const result = await fetchTimeLockPuzzleZkpParam();
-      console.log(result);
-      return JSON.stringify(result);
-    }
-    case 'fetchTimeLockPuzzleProvingKey': {
-      return `Gylman: ${origin}`;
-    }
-    case 'generateTimeLockPuzzleProof': {
-      return `Gylman: ${origin}`;
-    }
-    case 'generateSymmetricKey': {
-      return `Gylman: ${origin}`;
-    }
-    case 'encryptMessage': {
-      return `Gylman: ${origin}`;
-    }
-
-    case 'fetchEncryptionZkpParam': {
-      return `Gylman: ${origin}`;
-    }
-    case 'fetchEncryptionProvingKey': {
-      return `Gylman: ${origin}`;
-    }
-    case 'generateEncryptionProof': {
-      return `Gylman: ${origin}`;
-    }
-    default: {
-      throw new Error('Method not found.');
-    }
-  }
-};
