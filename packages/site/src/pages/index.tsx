@@ -103,6 +103,35 @@ const ErrorMessage = styled.div`
 `;
 
 const Index = () => {
+  const [timeLockPuzzleParam, setTimeLockPuzzleParam] = useState<any>();
+  const [timeLockPuzzlePrivateInput, setTimeLockPuzzlePrivateInput] =
+    useState<any>();
+  const [timeLockPuzzlePublicInput, setTimeLockPuzzlePublicInput] =
+    useState<any>();
+
+  const [timeLockPuzzleZkpParamB64, setTimeLockPuzzleZkpParamB64] =
+    useState<any>();
+  const [timeLockPuzzleZkpParam, setTimeLockPuzzleZkpParam] = useState<any>();
+  const [timeLockPuzzleProvingKey, setTimeLockPuzzleProvingKey] =
+    useState<any>();
+  const [timeLockPuzzleProvingKeyB64, setTimeLockPuzzleProvingKeyB64] =
+    useState<any>();
+  const [timeLockPuzzleProof, setTimeLockPuzzleProof] = useState<any>();
+  const [encryptionKey, setEncryptionKey] = useState<any>();
+  const [cipherText, setCipherText] = useState<any>();
+  const [encryptionZkpParam, setEncryptionZkpParam] = useState<any>();
+  const [encryptionZkpParamB64, setEncryptionZkpParamB64] = useState<any>();
+  const [encryptionProvingKey, setEncryptionProvingKey] = useState<any>();
+  const [encryptionProvingKeyB64, setEncryptionProvingKeyB64] = useState<any>();
+
+  const [message, setMessage] = useState('');
+  const handleInputMessageField = (
+    changeEvent: ChangeEvent<HTMLInputElement>,
+  ) => {
+    changeEvent.preventDefault();
+    setMessage(changeEvent.target.value);
+  };
+
   const { error } = useMetaMaskContext();
   const { isFlask, snapsDetected, installedSnap } = useMetaMask();
   const requestSnap = useRequestSnap();
@@ -112,21 +141,153 @@ const Index = () => {
     ? isFlask
     : snapsDetected;
 
-  const handleClick = async (func: string) => {
-    return await invokeSnap({ method: func });
+  function base64ToUint8Array(base64String) {
+    const binaryString = atob(base64String); // atob decodes the Base64 string
+    const len = binaryString.length;
+    const uint8Array = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i);
+    }
+    return uint8Array;
+  }
+
+  const handleClick = async (func: string, params?: any) => {
+    return await invokeSnap({ method: func, params });
   };
 
-  const createClickHandler = (func: string) => async () => {
-    const response = await handleClick(func);
-    console.log(response);
-  };
+  const createClickHandler = (func: string, params?: any) => async () => {
+    if (func === 'generateTimeLockPuzzleParam') {
+      console.log('Generating Params for Time-Lock Puzzle');
+      const response = await handleClick(func, params);
+      console.log('Time-Lock Puzzle Params are ready', response);
+      setTimeLockPuzzleParam(response);
+    }
+    if (func === 'generateTimeLockPuzzle') {
+      if (!timeLockPuzzleParam) {
+        console.log(
+          'Time-Lock Puzzle Params are not generated yet! Please generate them first.',
+        );
+        return;
+      }
+      console.log('Generating Time-Lock Puzzle');
+      const response = await handleClick(func, params);
+      console.log('Time-Lock Puzzle is ready', response);
+      setTimeLockPuzzlePrivateInput(response[0]);
+      setTimeLockPuzzlePublicInput(response[1]);
+    }
+    if (func === 'fetchTimeLockPuzzleZkpParam') {
+      console.log('Fetching ZKP Param for Time-Lock Puzzle');
+      const response = await handleClick(func, params);
+      const result = base64ToUint8Array(response);
+      console.log('ZKP Param for Time-Lock Puzzle is ready', result);
+      setTimeLockPuzzleZkpParam(result);
+      setTimeLockPuzzleZkpParamB64(response);
+    }
+    if (func === 'fetchTimeLockPuzzleProvingKey') {
+      console.log('Fetching Proving Key for Time-Lock Puzzle');
+      const response = await handleClick(func, params);
+      const result = base64ToUint8Array(response);
+      console.log('Proving Key for Time-Lock Puzzle is ready', result);
+      setTimeLockPuzzleProvingKey(result);
+      setTimeLockPuzzleProvingKeyB64(response);
+    }
+    if (func === 'generateTimeLockPuzzleProof') {
+      if (
+        !timeLockPuzzleZkpParam ||
+        !timeLockPuzzleProvingKey ||
+        !timeLockPuzzlePublicInput ||
+        !timeLockPuzzlePrivateInput ||
+        !timeLockPuzzleParam
+      ) {
+        console.log(
+          'Cannot generate Time-Lock Puzzle Proof! Please make sure all the required params are generated.',
+        );
+        return;
+      }
+      console.log('Proving Time-Lock Puzzle');
+      const response = await handleClick(func, {
+        timeLockPuzzleZkpParamB64,
+        timeLockPuzzleProvingKeyB64,
+        timeLockPuzzlePublicInput,
+        timeLockPuzzlePrivateInput,
+        timeLockPuzzleParam,
+      });
+      const result = base64ToUint8Array(response);
+      console.log(' Time-Lock Puzzle Proof is ready', result);
+      setTimeLockPuzzleProof(result);
+    }
+    if (func === 'generateSymmetricKey') {
+      if (!timeLockPuzzlePrivateInput) {
+        console.log(
+          'Cannot generate Symmetric Key! Please make sure the Time-Lock Puzzle is generated.',
+        );
+        return;
+      }
+      console.log('Generating Symmetric Key');
+      const response = await handleClick(func, timeLockPuzzlePrivateInput);
+      console.log('Symmetric Key is ready', response);
+      setEncryptionKey(response);
+    }
+    if (func === 'encryptMessage') {
+      if (!encryptionKey) {
+        console.log(
+          'Cannot encrypt message! Please make sure the Symmetric Key is generated.',
+        );
+        return;
+      }
 
-  const [message, setMessage] = useState('');
-  const handleInputMessageField = (
-    changeEvent: ChangeEvent<HTMLInputElement>,
-  ) => {
-    changeEvent.preventDefault();
-    setMessage(changeEvent.target.value);
+      console.log('Encrypting Message');
+      const response = await handleClick(func, { message, encryptionKey });
+      console.log('Cipher Text is ready', response);
+      setCipherText(response);
+    }
+    if (func === 'fetchEncryptionZkpParam') {
+      console.log('Fetching ZKP Param for Encryption');
+      const response = await handleClick(func, params);
+      const result = base64ToUint8Array(response);
+      console.log('ZKP Param for Encryption is ready', result);
+      setEncryptionZkpParam(result);
+      setEncryptionZkpParamB64(response);
+    }
+    if (func === 'fetchEncryptionProvingKey') {
+      console.log('Fetching Proving Key for Encryption');
+      const response = await handleClick(func, params);
+      const result = base64ToUint8Array(response);
+      console.log('Proving Key for Encryption is ready', result);
+      setEncryptionProvingKey(result);
+      setEncryptionProvingKeyB64(response);
+    }
+    if (func === 'generateEncryptionProof') {
+      if (
+        !encryptionZkpParam ||
+        !encryptionProvingKey ||
+        !cipherText ||
+        !encryptionKey
+      ) {
+        console.log(
+          'Cannot generate Encryption Proof! Please make sure all the required params are generated.',
+        );
+        return;
+      }
+      const encryptionPublicInput = {
+        encryptedData: cipherText,
+        kHashValue: timeLockPuzzlePublicInput.kHashValue,
+      };
+      const encryptionPrivateInput = {
+        data: message,
+        k: timeLockPuzzlePrivateInput.k,
+      };
+
+      console.log('Proving Encryption');
+      const response = await handleClick(func, {
+        encryptionZkpParamB64,
+        encryptionProvingKeyB64,
+        encryptionPublicInput,
+        encryptionPrivateInput,
+      });
+      const result = base64ToUint8Array(response);
+      console.log('Encryption Proof is ready', result);
+    }
   };
 
   return (
@@ -214,7 +375,10 @@ const Index = () => {
             description: 'Using the params, generate the time-lock puzzle.',
             button: (
               <PvdeButton
-                onClick={createClickHandler('generateTimeLockPuzzle')}
+                onClick={createClickHandler(
+                  'generateTimeLockPuzzle',
+                  timeLockPuzzleParam,
+                )}
                 disabled={!installedSnap}
               >
                 Generate

@@ -17,12 +17,38 @@ import init, {
   verify_encryption_proof,
 } from '../build/pvde';
 
+function base64ToArrayBuffer(base64: string) {
+  const binaryString = atob(base64);
+
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
 let initialized = false;
 async function ensureInitialized() {
   if (!initialized) {
-    await init();
-    // eslint-disable-next-line require-atomic-updates
-    initialized = true;
+    try {
+      const contents = await snap.request({
+        method: 'snap_getFile',
+        params: {
+          path: './build/pvde_bg.wasm',
+          encoding: 'base64',
+        },
+      });
+
+      const buffer = base64ToArrayBuffer(contents);
+      const wasmModule = await init(buffer);
+
+      await init(wasmModule);
+
+      initialized = true;
+    } catch (error) {
+      console.log('stompesi error', error);
+    }
   }
 }
 
