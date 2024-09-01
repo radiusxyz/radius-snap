@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "@metamask/snaps-sdk": "^6.1.1",
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "pvde": "https://github.com/radiusxyz/pvde.js"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
