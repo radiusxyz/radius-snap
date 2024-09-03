@@ -2,6 +2,7 @@ import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 
 import {
   encryptMessage,
+  fetchEncryptionProvingKey,
   fetchEncryptionZkpParam,
   fetchTimeLockPuzzleProvingKey,
   fetchTimeLockPuzzleZkpParam,
@@ -67,15 +68,11 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return b64;
     }
     case 'fetchTimeLockPuzzleProvingKey': {
-      console.log('hello world');
-
       const result = await fetchTimeLockPuzzleProvingKey();
       const b64 = uint8ArrayToBase64(result);
       return b64;
     }
     case 'generateTimeLockPuzzleProof': {
-      console.log(request.params);
-      console.log(typeof request.params);
       const {
         timeLockPuzzleZkpParamB64,
         timeLockPuzzleProvingKeyB64,
@@ -119,7 +116,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return b64;
     }
     case 'fetchEncryptionProvingKey': {
-      const result = await fetchTimeLockPuzzleProvingKey();
+      const result = await fetchEncryptionProvingKey();
       const b64 = uint8ArrayToBase64(result);
       return b64;
     }
@@ -132,8 +129,6 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         encryptionPublicInput,
         encryptionPrivateInput,
       } = request.params;
-      console.log(encryptionPublicInput);
-      console.log(encryptionPrivateInput);
       const encryptionZkpParam = base64ToUint8Array(encryptionZkpParamB64);
       const encryptionProvingKey = base64ToUint8Array(encryptionProvingKeyB64);
       const result = await generateEncryptionProof(
