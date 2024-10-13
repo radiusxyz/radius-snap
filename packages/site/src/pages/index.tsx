@@ -7,7 +7,7 @@ import {
   InstallFlaskButton,
   ReconnectButton,
   Card,
-  PvdeCard,
+  RadiusCard,
   PvdeButton,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
@@ -123,6 +123,7 @@ const Index = () => {
   const [encryptionZkpParamB64, setEncryptionZkpParamB64] = useState<any>();
   const [encryptionProvingKey, setEncryptionProvingKey] = useState<any>();
   const [encryptionProvingKeyB64, setEncryptionProvingKeyB64] = useState<any>();
+  const [method, setMethod] = useState('');
 
   const [message, setMessage] = useState('');
   const handleInputMessageField = (
@@ -156,6 +157,15 @@ const Index = () => {
   };
 
   const createClickHandler = (func: string, params?: any) => async () => {
+    if (func === 'selectPvde') {
+      setMethod('pvde');
+      console.log('Selected PVDE');
+      return;
+    }
+    if (func === 'selectSkde') {
+      setMethod('skde');
+      return;
+    }
     if (func === 'generateTimeLockPuzzleParam') {
       console.log('Generating Params for Time-Lock Puzzle');
       const response = await handleClick(func, params);
@@ -293,7 +303,7 @@ const Index = () => {
   return (
     <Container>
       <Heading>
-        Welcome to <Span>PVDE-snap</Span>
+        Welcome to <Span>Radius Snap</Span>
       </Heading>
       <Subtitle>
         Get started by editing <code>src/index.tsx</code>
@@ -348,17 +358,16 @@ const Index = () => {
         )}
       </CardContainer>
       <CardContainer>
-        <PvdeCard
+        <RadiusCard
           content={{
-            title: 'Generate Time-Lock Puzzle Params',
-            description:
-              'Generate params that are required for making a time-lock puzzle.',
+            title: 'PVDE',
+            description: 'Encrypt using practical verifiable delay function.',
             button: (
               <PvdeButton
-                onClick={createClickHandler('generateTimeLockPuzzleParam')}
-                disabled={!installedSnap}
+                onClick={createClickHandler('selectPvde')}
+                disabled={!installedSnap || method === 'pvde'}
               >
-                Generate
+                Start
               </PvdeButton>
             ),
           }}
@@ -368,82 +377,17 @@ const Index = () => {
             Boolean(installedSnap) &&
             !shouldDisplayReconnectButton(installedSnap)
           }
-        />
-        <PvdeCard
+        />{' '}
+        <RadiusCard
           content={{
-            title: 'Generate Time-Lock Puzzle',
-            description: 'Using the params, generate the time-lock puzzle.',
+            title: 'SKDE',
+            description: 'Encrypt using single key delay encryption',
             button: (
               <PvdeButton
-                onClick={createClickHandler(
-                  'generateTimeLockPuzzle',
-                  timeLockPuzzleParam,
-                )}
-                disabled={!installedSnap}
+                onClick={createClickHandler('selectSkde')}
+                disabled={!installedSnap || method === 'skde'}
               >
-                Generate
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        <PvdeCard
-          content={{
-            title: 'Fetch Time-Lock Puzzle ZKP Param',
-            description:
-              'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('fetchTimeLockPuzzleZkpParam')}
-                disabled={!installedSnap}
-              >
-                Fetch
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        <PvdeCard
-          content={{
-            title: 'Fetch Time-Lock Puzzle Proving Key',
-            description:
-              'Fetch ZKP proving key from a server in order to use it for generating a zk-proof.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('fetchTimeLockPuzzleProvingKey')}
-                disabled={!installedSnap}
-              >
-                Fetch
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        <PvdeCard
-          content={{
-            title: 'Generate Time-Lock Puzzle Proof',
-            description: 'Prove time-lock puzzle.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('generateTimeLockPuzzleProof')}
-                disabled={!installedSnap}
-              >
-                Prove
+                Start
               </PvdeButton>
             ),
           }}
@@ -455,115 +399,346 @@ const Index = () => {
           }
         />
       </CardContainer>
-      <CardContainer>
-        <PvdeCard
-          content={{
-            title: 'Generate Symmetric Key',
-            description:
-              'Generate symmetric key needed for encrypting a raw transaction.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('generateSymmetricKey')}
-                disabled={!installedSnap}
-              >
-                Generate
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        <PvdeCard
-          content={{
-            title: 'Encrypt Message',
-            description:
-              'Encrypt the raw transaction using the generated symmetric key.',
-            message,
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('encryptMessage')}
-                disabled={!installedSnap}
-              >
-                Encrypt
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-          inputHandler={handleInputMessageField}
-          input
-        />
-        <PvdeCard
-          content={{
-            title: 'Fetch Encryption ZKP param',
-            description:
-              'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('fetchEncryptionZkpParam')}
-                disabled={!installedSnap}
-              >
-                Fetch
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        <PvdeCard
-          content={{
-            title: 'Fetch Encryption Proving Key',
-            description:
-              'Fetch ZKP proving key from a server in order to use it for generating a zk-proof of encryption.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('fetchEncryptionProvingKey')}
-                disabled={!installedSnap}
-              >
-                Fetch
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        <PvdeCard
-          content={{
-            title: 'Generate Encryption Proof',
-            description: 'Prove the validity of encryption.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('generateEncryptionProof')}
-                disabled={!installedSnap}
-              >
-                Prove
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-      </CardContainer>
+      {method === 'pvde' && (
+        <>
+          <CardContainer>
+            <RadiusCard
+              content={{
+                title: 'Generate Time-Lock Puzzle Params',
+                description:
+                  'Generate params that are required for making a time-lock puzzle.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('generateTimeLockPuzzleParam')}
+                    disabled={!installedSnap}
+                  >
+                    Generate
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Generate Time-Lock Puzzle',
+                description: 'Using the params, generate the time-lock puzzle.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler(
+                      'generateTimeLockPuzzle',
+                      timeLockPuzzleParam,
+                    )}
+                    disabled={!installedSnap}
+                  >
+                    Generate
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Fetch Time-Lock Puzzle ZKP Param',
+                description:
+                  'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('fetchTimeLockPuzzleZkpParam')}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Fetch Time-Lock Puzzle Proving Key',
+                description:
+                  'Fetch ZKP proving key from a server in order to use it for generating a zk-proof.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler(
+                      'fetchTimeLockPuzzleProvingKey',
+                    )}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Generate Time-Lock Puzzle Proof',
+                description: 'Prove time-lock puzzle.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('generateTimeLockPuzzleProof')}
+                    disabled={!installedSnap}
+                  >
+                    Prove
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+          </CardContainer>
+          <CardContainer>
+            <RadiusCard
+              content={{
+                title: 'Generate Symmetric Key',
+                description:
+                  'Generate symmetric key needed for encrypting a raw transaction.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('generateSymmetricKey')}
+                    disabled={!installedSnap}
+                  >
+                    Generate
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Encrypt Message',
+                description:
+                  'Encrypt the raw transaction using the generated symmetric key.',
+                message,
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('encryptMessage')}
+                    disabled={!installedSnap}
+                  >
+                    Encrypt
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+              inputHandler={handleInputMessageField}
+              input
+            />
+            <RadiusCard
+              content={{
+                title: 'Fetch Encryption ZKP param',
+                description:
+                  'Fetch ZKP params from a server in order to use it for generating a zk-proof.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('fetchEncryptionZkpParam')}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Fetch Encryption Proving Key',
+                description:
+                  'Fetch ZKP proving key from a server in order to use it for generating a zk-proof of encryption.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('fetchEncryptionProvingKey')}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Generate Encryption Proof',
+                description: 'Prove the validity of encryption.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('generateEncryptionProof')}
+                    disabled={!installedSnap}
+                  >
+                    Prove
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+          </CardContainer>{' '}
+        </>
+      )}
+      {method === 'skde' && (
+        <>
+          <CardContainer>
+            <RadiusCard
+              content={{
+                title: 'Fetch SKDE Params',
+                description:
+                  'Fetch SKDE params from a secure rpc endpoint to be used for encryption.',
+                message,
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('encryptMessageSkde')}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Fetch SKDE encryption key',
+                description:
+                  'Fetch SKDE encryption key from a secure rpc endpoint to be used for encryption.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('decryptCipherSkde')}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Encrypt Message',
+                description:
+                  'Encrypt the raw transaction using the generated symmetric key.',
+                message,
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('encryptMessageSkde')}
+                    disabled={!installedSnap}
+                  >
+                    Encrypt
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+              inputHandler={handleInputMessageField}
+              input
+            />
+          </CardContainer>
+          <CardContainer>
+            <RadiusCard
+              content={{
+                title: 'Fetch SKDE decrytion key',
+                description:
+                  'Fetch SKDE decryption key from a secure rpc endpoint to be used for decryption.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('decryptCipherSkde')}
+                    disabled={!installedSnap}
+                  >
+                    Fetch
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+            <RadiusCard
+              content={{
+                title: 'Decrypt Ciphertext',
+                description:
+                  'Decrypt the ciphertext using SKDE params and decryption key',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('decryptCipherSkde')}
+                    disabled={!installedSnap}
+                  >
+                    Decrypt
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            />
+          </CardContainer>
+        </>
+      )}
       <CardContainer>
         <Notice>
           <p>
