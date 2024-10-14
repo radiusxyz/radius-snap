@@ -7,7 +7,7 @@
     "url": "https://github.com/MetaMask/template-snap-monorepo.git"
   },
   "source": {
-    "shasum": "0ewX1sXE2DMj5TgKhAFL9gJ9Sk/maR5V7BalKepPztI=",
+    "shasum": "T1XOlO+NjRRYcDoh1lS2pmg/bWJe+1Y/igrfOho/DZI=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -16,7 +16,8 @@
       }
     },
     "files": [
-      "./build/pvde_bg.wasm"
+      "./build/delay_encryption/pvde/pvde_bg.wasm",
+      "./build/delay_encryption/skde/skde_wasm_bg.wasm"
     ]
   },
   "initialConnections": {

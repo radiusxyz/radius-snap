@@ -126,11 +126,24 @@ const Index = () => {
   const [method, setMethod] = useState('');
 
   const [message, setMessage] = useState('');
+  const [messageSkde, setMessageSkde] = useState('');
+  const [cipherTextSkde, setCipherTextSkde] = useState('');
+  const [decryptionKeySkde, setDecryptionKeySkde] = useState('');
+  const [encryptionKeySkde, setEncryptionKeySkde] = useState('');
+  const [skdeParams, setSkdeParams] = useState<any>();
+
   const handleInputMessageField = (
     changeEvent: ChangeEvent<HTMLInputElement>,
   ) => {
     changeEvent.preventDefault();
     setMessage(changeEvent.target.value);
+  };
+
+  const handleInputMessageSkdeField = (
+    changeEvent: ChangeEvent<HTMLInputElement>,
+  ) => {
+    changeEvent.preventDefault();
+    setMessageSkde(changeEvent.target.value);
   };
 
   const { error } = useMetaMaskContext();
@@ -297,6 +310,43 @@ const Index = () => {
       });
       const result = base64ToUint8Array(response);
       console.log('Encryption Proof is ready', result);
+    }
+    if (func === 'fetchSkdeParams') {
+      console.log('Fetching SKDE Params');
+      const response = await handleClick(func, params);
+      console.log('SKDE Params are ready', response);
+      setSkdeParams(response);
+    }
+    if (func === 'fetchEncryptionKeySkde') {
+      console.log('Fetching Encryption Key for SKDE');
+      const response = await handleClick(func, params);
+      console.log('Encryption Key is ready', response);
+      setEncryptionKeySkde(response);
+    }
+    if (func === 'encryptMessageSkde') {
+      console.log('Encrypting Message using SKDE');
+      const response = await handleClick(func, {
+        skdeParams,
+        messageSkde,
+        encryptionKeySkde,
+      });
+      console.log('Cipher Text is ready', response);
+      setCipherTextSkde(response);
+    }
+    if (func === 'fetchDecryptionKeySkde') {
+      console.log('Fetching Decryption Key for SKDE');
+      const response = await handleClick(func, params);
+      console.log('Decryption Key is ready', response);
+      setDecryptionKeySkde(response);
+    }
+    if (func === 'decryptCipherSkde') {
+      console.log('Decrypting Cipher using SKDE');
+      const response = await handleClick(func, {
+        skdeParams,
+        cipherTextSkde,
+        decryptionKeySkde,
+      });
+      console.log('Decrypted Message is ready', response);
     }
   };
 
@@ -633,7 +683,7 @@ const Index = () => {
                 message,
                 button: (
                   <PvdeButton
-                    onClick={createClickHandler('encryptMessageSkde')}
+                    onClick={createClickHandler('fetchSkdeParams')}
                     disabled={!installedSnap}
                   >
                     Fetch
@@ -654,7 +704,7 @@ const Index = () => {
                   'Fetch SKDE encryption key from a secure rpc endpoint to be used for encryption.',
                 button: (
                   <PvdeButton
-                    onClick={createClickHandler('decryptCipherSkde')}
+                    onClick={createClickHandler('fetchEncryptionKeySkde')}
                     disabled={!installedSnap}
                   >
                     Fetch
@@ -673,7 +723,7 @@ const Index = () => {
                 title: 'Encrypt Message',
                 description:
                   'Encrypt the raw transaction using the generated symmetric key.',
-                message,
+                message: messageSkde,
                 button: (
                   <PvdeButton
                     onClick={createClickHandler('encryptMessageSkde')}
@@ -689,7 +739,7 @@ const Index = () => {
                 Boolean(installedSnap) &&
                 !shouldDisplayReconnectButton(installedSnap)
               }
-              inputHandler={handleInputMessageField}
+              inputHandler={handleInputMessageSkdeField}
               input
             />
           </CardContainer>
@@ -701,7 +751,7 @@ const Index = () => {
                   'Fetch SKDE decryption key from a secure rpc endpoint to be used for decryption.',
                 button: (
                   <PvdeButton
-                    onClick={createClickHandler('decryptCipherSkde')}
+                    onClick={createClickHandler('fetchDecryptionKeySkde')}
                     disabled={!installedSnap}
                   >
                     Fetch

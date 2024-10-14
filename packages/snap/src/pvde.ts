@@ -1,3 +1,4 @@
+/* eslint-disable require-atomic-updates */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable jsdoc/require-jsdoc */
@@ -15,7 +16,7 @@ import init, {
   decrypt,
   prove_encryption,
   verify_encryption_proof,
-} from '../build/pvde';
+} from '../build/delay_encryption/pvde/pvde';
 
 function base64ToArrayBuffer(base64: string) {
   const binaryString = atob(base64);
@@ -35,7 +36,7 @@ async function ensureInitialized() {
       const contents = await snap.request({
         method: 'snap_getFile',
         params: {
-          path: './build/pvde_bg.wasm',
+          path: './build/delay_encryption/pvde/pvde_bg.wasm',
           encoding: 'base64',
         },
       });

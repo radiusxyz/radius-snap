@@ -1,0 +1,17 @@
+{
+  "name": "skde",
+  "type": "module",
+  "description": "Single Key Delay Encryption WASM",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "skde_wasm_bg.wasm",
+    "skde_wasm.js",
+    "skde_wasm.d.ts"
+  ],
+  "main": "skde_wasm.js",
+  "types": "skde_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

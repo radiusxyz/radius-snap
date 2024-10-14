@@ -1,4 +1,4 @@
-import init from '../build/pvde';
+import init from '../build/delay_encryption/pvde/pvde';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async function () {
@@ -6,4 +6,4 @@ import init from '../build/pvde';
   console.log('successssss');
 })();
 
-export * from '../build/pvde';
+export * from '../build/delay_encryption/pvde/pvde';
