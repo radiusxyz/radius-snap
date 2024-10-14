@@ -1,7 +1,7 @@
 import { useEffect, type ChangeEvent, type ReactNode } from 'react';
 import styled from 'styled-components';
 
-type PvdeCardProps = {
+type RadiusCardProps = {
   content: {
     title?: string;
     description: ReactNode;
@@ -14,7 +14,7 @@ type PvdeCardProps = {
   inputHandler?: (changeEvent: ChangeEvent<HTMLInputElement>) => void;
 };
 
-const PvdeCardWrapper = styled.div<{
+const RadiusCardWrapper = styled.div<{
   fullWidth?: boolean | undefined;
   disabled?: boolean | undefined;
 }>`
@@ -58,13 +58,13 @@ const Input = styled.input`
   margin-bottom: 10px;
 `;
 
-export const PvdeCard = ({
+export const RadiusCard = ({
   content,
   disabled = false,
   fullWidth,
   input,
   inputHandler,
-}: PvdeCardProps) => {
+}: RadiusCardProps) => {
   const { title, description, button, message } = content;
 
   useEffect(() => {
@@ -73,11 +73,11 @@ export const PvdeCard = ({
     }
   }, [message]);
   return (
-    <PvdeCardWrapper fullWidth={fullWidth} disabled={disabled}>
+    <RadiusCardWrapper fullWidth={fullWidth} disabled={disabled}>
       {title && <Title>{title}</Title>}
       <Description>{description}</Description>
       {input && <Input value={message} onChange={inputHandler} />}
       {button}
-    </PvdeCardWrapper>
+    </RadiusCardWrapper>
   );
 };
