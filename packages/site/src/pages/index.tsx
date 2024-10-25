@@ -377,6 +377,26 @@ const Index = () => {
       });
       console.log('Decrypted Message is ready', response);
     }
+    if (func === 'sendEncryptedMessage') {
+      try {
+        const [from] = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        if (!from) {
+          throw new Error('Failed to get account');
+        }
+        console.log('Sending Encrypted Transaction');
+
+        const response = await handleClick(func, {
+          to,
+          amount,
+          cipherTextSkde,
+        });
+        console.log('Transaction is sent', response);
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   return (
@@ -821,7 +841,7 @@ const Index = () => {
                 description: 'Request a transaction to be sent to the network.',
                 button: (
                   <PvdeButton
-                    onClick={createClickHandler('decryptCipherSkde')}
+                    onClick={createClickHandler('sendEncryptedMessage')}
                     disabled={!installedSnap}
                   >
                     Send

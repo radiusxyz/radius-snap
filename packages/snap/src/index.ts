@@ -195,6 +195,13 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       return result;
     }
+
+    case 'sendEncryptedMessage': {
+      const { to, amount, cipherTextSkde } = request.params;
+
+      const result = await encryptMessage(message, encryptionKey);
+      return result;
+    }
     default: {
       throw new Error('Method not found.');
     }
