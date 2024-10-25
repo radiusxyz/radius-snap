@@ -9,6 +9,7 @@ import {
   Card,
   RadiusCard,
   PvdeButton,
+  Input,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import {
@@ -102,6 +103,22 @@ const ErrorMessage = styled.div`
   }
 `;
 
+const Inputs = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const LabelBalance = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const Index = () => {
   const [timeLockPuzzleParam, setTimeLockPuzzleParam] = useState<any>();
   const [timeLockPuzzlePrivateInput, setTimeLockPuzzlePrivateInput] =
@@ -131,6 +148,18 @@ const Index = () => {
   const [decryptionKeySkde, setDecryptionKeySkde] = useState('');
   const [encryptionKeySkde, setEncryptionKeySkde] = useState('');
   const [skdeParams, setSkdeParams] = useState<any>();
+
+  const [to, setTo] = useState('');
+  const [amount, setAmount] = useState(0);
+
+  const handleAmount = (changeEvent: ChangeEvent<HTMLInputElement>) => {
+    changeEvent.preventDefault();
+    setAmount(changeEvent.target.value);
+  };
+  const handleTo = (changeEvent: ChangeEvent<HTMLInputElement>) => {
+    changeEvent.preventDefault();
+    setTo(changeEvent.target.value);
+  };
 
   const handleInputMessageField = (
     changeEvent: ChangeEvent<HTMLInputElement>,
@@ -786,6 +815,41 @@ const Index = () => {
                 !shouldDisplayReconnectButton(installedSnap)
               }
             />
+            <RadiusCard
+              content={{
+                title: 'Transact',
+                description: 'Request a transaction to be sent to the network.',
+                button: (
+                  <PvdeButton
+                    onClick={createClickHandler('decryptCipherSkde')}
+                    disabled={!installedSnap}
+                  >
+                    Send
+                  </PvdeButton>
+                ),
+              }}
+              disabled={!installedSnap}
+              fullWidth={
+                isMetaMaskReady &&
+                Boolean(installedSnap) &&
+                !shouldDisplayReconnectButton(installedSnap)
+              }
+            >
+              <Inputs>
+                <InputContainer>
+                  <LabelBalance>
+                    <span> To</span>
+                  </LabelBalance>
+                  <Input value={to} onChange={handleTo} />
+                </InputContainer>
+                <InputContainer>
+                  <LabelBalance>
+                    <span> Amount</span> <span>Balance: 0</span>
+                  </LabelBalance>
+                  <Input value={amount} onChange={handleAmount} />
+                </InputContainer>
+              </Inputs>
+            </RadiusCard>
           </CardContainer>
         </>
       )}

@@ -12,6 +12,7 @@ type RadiusCardProps = {
   fullWidth?: boolean;
   input?: boolean;
   inputHandler?: (changeEvent: ChangeEvent<HTMLInputElement>) => void;
+  children?: ReactNode;
 };
 
 const RadiusCardWrapper = styled.div<{
@@ -51,7 +52,7 @@ const Description = styled.div`
   margin-bottom: 2.4rem;
 `;
 
-const Input = styled.input`
+export const Input = styled.input`
   padding: 5px 5px;
   border-radius: 3px;
   border: none;
@@ -64,6 +65,7 @@ export const RadiusCard = ({
   fullWidth,
   input,
   inputHandler,
+  children,
 }: RadiusCardProps) => {
   const { title, description, button, message } = content;
 
@@ -77,6 +79,7 @@ export const RadiusCard = ({
       {title && <Title>{title}</Title>}
       <Description>{description}</Description>
       {input && <Input value={message} onChange={inputHandler} />}
+      {children}
       {button}
     </RadiusCardWrapper>
   );
