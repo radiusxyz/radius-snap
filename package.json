@@ -56,5 +56,8 @@
       "@lavamoat/preinstall-always-fail": false,
       "sharp": true
     }
+  },
+  "dependencies": {
+    "viem": "^2.21.37"
   }
 }
