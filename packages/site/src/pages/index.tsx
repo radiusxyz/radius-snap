@@ -224,61 +224,57 @@ const Index = () => {
             disabled={!installedSnap}
           />
         )}
+        <RadiusCard
+          content={{
+            title: 'Transact',
+            description: 'Request a transaction to be sent to the network.',
+            button: (
+              <PvdeButton
+                onClick={createClickHandler('send', { to, amount })}
+                disabled={!installedSnap}
+              >
+                Send
+              </PvdeButton>
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        >
+          <Inputs>
+            <InputContainer>
+              <LabelBalance>
+                <span> To</span>
+              </LabelBalance>
+              <Input
+                value={to}
+                onChange={handleTo}
+                placeholder="Enter recipient address"
+              />
+            </InputContainer>
+            <InputContainer>
+              <LabelBalance>
+                <span> Amount</span> <span>Balance: 0</span>
+              </LabelBalance>
+              <Input
+                type="text"
+                value={amount}
+                onChange={handleAmount}
+                placeholder="Enter a number"
+              />
+            </InputContainer>
+            <InputContainer>
+              <LabelBalance>
+                <span> Data</span>
+              </LabelBalance>
+              <Input type="text" placeholder="0x0" readOnly />
+            </InputContainer>
+          </Inputs>
+        </RadiusCard>
       </CardContainer>
-      <>
-        <CardContainer>
-          <RadiusCard
-            content={{
-              title: 'Transact',
-              description: 'Request a transaction to be sent to the network.',
-              button: (
-                <PvdeButton
-                  onClick={createClickHandler('send', { to, amount })}
-                  disabled={!installedSnap}
-                >
-                  Send
-                </PvdeButton>
-              ),
-            }}
-            disabled={!installedSnap}
-            fullWidth={
-              isMetaMaskReady &&
-              Boolean(installedSnap) &&
-              !shouldDisplayReconnectButton(installedSnap)
-            }
-          >
-            <Inputs>
-              <InputContainer>
-                <LabelBalance>
-                  <span> To</span>
-                </LabelBalance>
-                <Input
-                  value={to}
-                  onChange={handleTo}
-                  placeholder="Enter recipient address"
-                />
-              </InputContainer>
-              <InputContainer>
-                <LabelBalance>
-                  <span> Amount</span> <span>Balance: 0</span>
-                </LabelBalance>
-                <Input
-                  type="text"
-                  value={amount}
-                  onChange={handleAmount}
-                  placeholder="Enter a number"
-                />
-              </InputContainer>
-              <InputContainer>
-                <LabelBalance>
-                  <span> Data</span>
-                </LabelBalance>
-                <Input type="text" placeholder="0x0" readOnly />
-              </InputContainer>
-            </Inputs>
-          </RadiusCard>
-        </CardContainer>
-      </>
       <CardContainer>
         <Notice>
           <p>
