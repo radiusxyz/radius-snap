@@ -113,6 +113,7 @@ const Inputs = styled.div`
 const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 3px;
 `;
 
 const LabelBalance = styled.div`
@@ -122,7 +123,7 @@ const LabelBalance = styled.div`
 
 const Index = () => {
   const [to, setTo] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState(null);
 
   const handleAmount = (changeEvent: ChangeEvent<HTMLInputElement>) => {
     changeEvent.preventDefault();
@@ -267,6 +268,12 @@ const Index = () => {
                   onChange={handleAmount}
                   placeholder="Enter a number"
                 />
+              </InputContainer>
+              <InputContainer>
+                <LabelBalance>
+                  <span> Data</span>
+                </LabelBalance>
+                <Input type="text" placeholder="0x0" readOnly />
               </InputContainer>
             </Inputs>
           </RadiusCard>

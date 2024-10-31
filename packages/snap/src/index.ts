@@ -2,50 +2,21 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
-import { createWalletClient, custom, http } from 'viem';
+import { createWalletClient, http, parseTransaction } from 'viem';
 import { holesky } from 'viem/chains';
-import { parseTransaction } from 'viem';
-import { toHex } from 'viem/utils';
+import { toHex, parseUnits } from 'viem/utils';
 
-import {
-  encryptMessage,
-  fetchEncryptionProvingKey,
-  fetchEncryptionZkpParam,
-  fetchTimeLockPuzzleProvingKey,
-  fetchTimeLockPuzzleZkpParam,
-  generateEncryptionProof,
-  generateSymmetricKey,
-  generateTimeLockPuzzle,
-  generateTimeLockPuzzleParam,
-  generateTimeLockPuzzleProof,
-} from './pvde';
-import {
-  decryptCipher as decryptCipherSkde,
-  encryptMessage as encryptMessageSkde,
-} from './skde';
+import { encryptMessage as encryptMessageSkde } from './skde';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable camelcase */
-// pvde.js
 
-function uint8ArrayToBase64(uint8Array) {
-  let binaryString = '';
-  for (let i = 0; i < uint8Array.length; i++) {
-    binaryString += String.fromCharCode(uint8Array[i]);
-  }
-  return btoa(binaryString); // btoa encodes the string to Base64
-}
-
-function base64ToUint8Array(base64String) {
-  const binaryString = atob(base64String); // atob decodes the Base64 string
-  const len = binaryString.length;
-  const uint8Array = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    uint8Array[i] = binaryString.charCodeAt(i);
-  }
-  return uint8Array;
+export async function readStream(res: any) {
+  const bytes = await res.arrayBuffer();
+  const uint8bytes = new Uint8Array(bytes);
+  return uint8bytes;
 }
 
 /**
@@ -81,8 +52,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       const myRequest = await walletClient.prepareTransactionRequest({
         account,
-        to: '0xD612E58915c883393a644e6Ec1fF05E06c16Bcbc',
-        value: 100000000000000n,
+        to: request.params.to,
+        value: parseUnits(request.params.amount, 18),
       });
 
       const serializedTransaction = await walletClient.signTransaction(
@@ -99,23 +70,80 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       console.log('signature', signature);
 
-      const skdeParams = {
-        n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
-        g: '4',
-        t: 4,
-        h: '4294967296',
-        max_sequencer_number: '2',
-      };
+      // const skdeParams = {
+      //   n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
+      //   g: '4',
+      //   t: 4,
+      //   h: '4294967296',
+      //   max_sequencer_number: '2',
+      // };
 
-      const messageSkde = JSON.stringify(parsedTransaction);
+      // const messageSkde = JSON.stringify(parsedTransaction);
 
-      const encryptionKeySkde = {
-        pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
-      };
+      // const encryptionKeySkde = {
+      //   pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
+      // };
 
-      const cipherTextSkde = await encryptMessageSkde(
+      // const cipherTextSkde = await encryptMessageSkde(
+      //   skdeParams,
+      //   messageSkde,
+      //   encryptionKeySkde,
+      // );
+
+      let skdeParams;
+      let encryptionKeySkde;
+
+      try {
+        const response = await fetch('http://131.153.159.15:7100', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'get_skde_params',
+            params: {
+              key_id: 579,
+            },
+            id: 1,
+          }),
+        }).then(async (res) => readStream(res));
+        skdeParams = response?.skde_params;
+        console.log(skdeParams);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+
+      try {
+        const response = await fetch('http://131.153.159.15:7100', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'get_encryption_key',
+            params: {
+              key_id: 15,
+            },
+            id: 1,
+          }),
+        }).then(async (res) => readStream(res));
+        encryptionKeySkde = response?.encryption_key;
+        console.log(encryptionKeySkde);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+
+      const dataToEncrypt = JSON.stringify({
+        to: request.params.to,
+        value: serializedTransaction,
+        data: request.params.data,
+      });
+
+      const encryptedData = await encryptMessageSkde(
         skdeParams,
-        messageSkde,
+        dataToEncrypt,
         encryptionKeySkde,
       );
 
@@ -131,7 +159,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
               transaction_data: {
                 type: 'eth',
                 data: {
-                  encrypted_data: cipherTextSkde,
+                  encrypted_data: encryptedData,
                   open_data: {
                     raw_tx_hash: serializedTransaction,
                     from: account.address,
@@ -154,6 +182,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         },
         id: 1,
       };
+      console.log('hello world');
+      console.log(encrypted_transaction);
 
       try {
         const response = await fetch(url, {
