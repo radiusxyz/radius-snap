@@ -176,17 +176,67 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         myRequest,
       );
       console.log('serialized tx', serializedTransaction);
-      const transaction = parseTransaction(
-        '0x02ef0182031184773594008477359400809470997970c51812dc3a010c7d01b50e0d17dc79c8880de0b6b3a764000080c0',
-      );
+      const parsedTransaction = parseTransaction(serializedTransaction);
 
-      console.log('parsed tx', transaction);
+      console.log('parsed tx', parsedTransaction);
 
       const signature = await walletClient.sendRawTransaction({
         serializedTransaction,
       });
 
       console.log('signature', signature);
+
+      const url = 'http://131.153.159.15:3000';
+      const encrypted_transaction = {
+        jsonrpc: '2.0',
+        method: 'send_encrypted_transaction',
+        params: {
+          rollup_id: 'nodeinfra_rollup',
+          encrypted_transaction: {
+            type: 'skde',
+            data: {
+              transaction_data: {
+                type: 'eth',
+                data: {
+                  encrypted_data:
+                    '020000000000000020000000000000000daaa01de82daa08ea575078f2f4353953724170837188f6e3cd788644337e8e2aa2898978fda9eebc2b86ffd071535212296914cddd1a6fa747ca2ee9ed3519f61308cf76e05b824eca63232402556cac5775337ba2fea95667e85268f38cab0f6e7b78cdaf5e52f884233a9aabd609181704f1fbfa43299e24fc2215752c812000000000000000105cfedae6f9104920b9aca9562f4bf2dd316fd3ef897139e86419d3ef62f373738ef6525c5ef977633e1b2702dd563ebd727f8e30084efd83ef6aa0c9b47268085c38ae7d8fd204471f703f8401507acf33cc03e6a0461e40da6e5e7397dd4b012d272315aea34803a4cce5ba31ffecf792e794095a9943144131a566f9ec072000000000000000c3adcdf8e0332bd05bbf8823926f8e476556af7944d2bc92e2a447fb9bc9788a4ee96a9cedec5c71caadf91011d5d815873a3558ce8d0c98497018a8f809ec2c11e8a1faf56e642854ec3d21a517d2a431348ea7bc2884b4aee8f9d65c4120c66e7a395921eb2325c8b5fef658323fdd8abf1a2be786cf1a12e5be61b6a7318920000000000000004930ac28e7957ac6a1ba892e572f0a09f6e84637e17471e3a58053158b74da6bc68cf7cece324bfb1c361af2f8d4a99668a7a13149bab990cc02b6faec5a6bce00f450c61cf456af771a55b25dde60d42063b3e8acce97333b8eba41062ba6ea65d71a4afff8aae90f2891392183b99665cdc36c11dcc8db6e2cbb24afbb3120',
+                  open_data: {
+                    raw_tx_hash: serializedTransaction,
+                    from: String(account.address),
+                    nonce: String(parsedTransaction.nonce),
+                    gas_price: String(parsedTransaction.maxFeePerGas),
+                    gas_limit: String(parsedTransaction.gas),
+                    signature: {
+                      r: parsedTransaction.r,
+                      s: parsedTransaction.s,
+                      v: parsedTransaction.v,
+                    },
+                    other: {},
+                  },
+                  plain_data: null,
+                },
+              },
+              key_id: 167330,
+            },
+          },
+        },
+        id: 1,
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(encrypted_transaction),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+
       return {
         n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
         g: '4',
