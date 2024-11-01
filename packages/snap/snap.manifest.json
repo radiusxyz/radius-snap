@@ -24,6 +24,7 @@
     "https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/time_lock_puzzle_zkp_param.data": {}
   },
   "initialPermissions": {
+    "snap_manageState": {},
     "snap_dialog": {},
     "endowment:rpc": {
       "dapps": true,

@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
+import {
+  english,
+  generateMnemonic,
+  mnemonicToAccount,
+  privateKeyToAccount,
+} from 'viem/accounts';
 import { createWalletClient, http, parseTransaction } from 'viem';
 import { holesky } from 'viem/chains';
 import { toHex, parseUnits } from 'viem/utils';
@@ -39,7 +44,15 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   request,
 }) => {
   switch (request.method) {
-    case 'send': {
+    case 'load': {
+      // At a later time, get the stored data.
+      const persistedData = await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'get' },
+      });
+      return persistedData;
+    }
+    case 'generate': {
       const mnemonic = generateMnemonic(english);
       console.log(mnemonic);
 
@@ -48,7 +61,16 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         'guard ensure sample hockey fuel habit chair sport later neither water nephew',
       );
       console.log(account);
+      return account;
+    }
+    case 'import': {
+      const account = privateKeyToAccount(
+        '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
+      );
+      return account;
+    }
 
+    case 'send': {
       const walletClient = createWalletClient({
         chain: holesky,
         transport: http(),

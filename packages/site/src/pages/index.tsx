@@ -108,6 +108,7 @@ const Inputs = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  gap: ${(props) => props.marginTop || '0'};
 `;
 
 const InputContainer = styled.div`
@@ -124,7 +125,7 @@ const LabelBalance = styled.div`
 const Index = () => {
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState(null);
-
+  const [privateKey, setPrivateKey] = useState('');
   const handleAmount = (changeEvent: ChangeEvent<HTMLInputElement>) => {
     changeEvent.preventDefault();
     let inputValue = event.target.value;
@@ -141,6 +142,11 @@ const Index = () => {
   const handleTo = (changeEvent: ChangeEvent<HTMLInputElement>) => {
     changeEvent.preventDefault();
     setTo(changeEvent.target.value);
+  };
+
+  const handlePrivateKey = (changeEvent: ChangeEvent<HTMLInputElement>) => {
+    changeEvent.preventDefault();
+    setPrivateKey(changeEvent.target.value);
   };
 
   const { error } = useMetaMaskContext();
@@ -226,6 +232,68 @@ const Index = () => {
         )}
         <RadiusCard
           content={{
+            title: 'Load existing',
+            description:
+              'Load your private key from local storage, if you already have created',
+            button: (
+              <PvdeButton
+                onClick={createClickHandler('load')}
+                disabled={!installedSnap}
+              >
+                Load from local storage
+              </PvdeButton>
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        ></RadiusCard>
+        <RadiusCard
+          content={{
+            title: 'Generate Private Key',
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        >
+          <Inputs marginTop="120px">
+            <InputContainer>
+              <PvdeButton
+                onClick={createClickHandler('generate')}
+                disabled={!installedSnap}
+              >
+                Generate new one
+              </PvdeButton>
+            </InputContainer>
+
+            <InputContainer>
+              <LabelBalance>
+                <span> Import existing one</span>
+              </LabelBalance>
+              <Input
+                type="text"
+                value={privateKey}
+                onChange={handlePrivateKey}
+                placeholder="Enter your private key"
+              />
+
+              <PvdeButton
+                onClick={createClickHandler('import')}
+                disabled={!installedSnap}
+              >
+                Import{' '}
+              </PvdeButton>
+            </InputContainer>
+          </Inputs>
+        </RadiusCard>
+        <RadiusCard
+          content={{
             title: 'Transact',
             description: 'Request a transaction to be sent to the network.',
             button: (
@@ -270,7 +338,7 @@ const Index = () => {
               <LabelBalance>
                 <span> Data</span>
               </LabelBalance>
-              <Input type="text" placeholder="0x0" readOnly />
+              <Input type="text" placeholder="0x" readOnly />
             </InputContainer>
           </Inputs>
         </RadiusCard>
