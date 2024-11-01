@@ -7,7 +7,10 @@ import { holesky } from 'viem/chains';
 import { toHex, parseUnits } from 'viem/utils';
 import axios from 'axios';
 
-import { encryptMessage as encryptMessageSkde } from './skde';
+import {
+  encryptMessage as encryptMessageSkde,
+  decryptCipher as decryptCipherSkde,
+} from './skde';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -70,90 +73,106 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       });
 
       console.log('signature', signature);
+
+      const skdeParamsStatic = {
+        n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
+        g: '4',
+        t: 4,
+        h: '4294967296',
+        max_sequencer_number: '2',
+      };
+
+      const messageSkde = 'JSON.stringify(parsedTransaction)';
+
+      const encryptionKeySkdeStatic = {
+        pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
+      };
+
+      const decryptionKeySkdeStatic = {
+        sk: '38833048300325516141445839739644018404110477961707775037115236576780421892476578378034582536195146817009345764092161668346878367282186498795101059094681709712929905024483143171658282800283336368593335787557451643648363431385562973837024404466434120134771798848006526362428133799287842185760112952945802615179',
+      };
+
+      const cipherTextSkde = await encryptMessageSkde(
+        skdeParamsStatic,
+        messageSkde,
+        encryptionKeySkdeStatic,
+      );
+
       console.log('hello world');
+      console.log(cipherTextSkde);
 
-      // const skdeParamsStatic = {
-      //   n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
-      //   g: '4',
-      //   t: 4,
-      //   h: '4294967296',
-      //   max_sequencer_number: '2',
-      // };
+      // let skdeParams;
+      // let encryptionKeySkde;
 
-      // const messageSkde = JSON.stringify(parsedTransaction);
+      // try {
+      //   const response = await axios.post(
+      //     'http://131.153.159.15:7100',
+      //     {
+      //       jsonrpc: '2.0',
+      //       method: 'get_skde_params',
+      //       params: {
+      //         key_id: 579,
+      //       },
+      //       id: 1,
+      //     },
+      //     {
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //     },
+      //   );
 
-      // const encryptionKeySkdeStatic = {
-      //   pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
-      // };
+      //   skdeParams = response.data.result.skde_params;
+      //   console.log('skde params', skdeParams);
+      // } catch (error) {
+      //   console.error('Error:', error);
+      // }
 
-      // const cipherTextSkde = await encryptMessageSkde(
-      //   skdeParamsStatic,
-      //   messageSkde,
-      //   encryptionKeySkdeStatic,
-      // );
+      // try {
+      //   const response = await axios.post(
+      //     'http://131.153.159.15:7100',
+      //     {
+      //       jsonrpc: '2.0',
+      //       method: 'get_encryption_key',
+      //       params: {
+      //         key_id: 15,
+      //       },
+      //       id: 1,
+      //     },
+      //     {
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //     },
+      //   );
 
-      let skdeParams;
-      let encryptionKeySkde;
-
-      try {
-        const response = await axios.post(
-          'http://131.153.159.15:7100',
-          {
-            jsonrpc: '2.0',
-            method: 'get_skde_params',
-            params: {
-              key_id: 579,
-            },
-            id: 1,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        );
-
-        skdeParams = response.data.result.skde_params;
-        console.log('skde params', skdeParams);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-
-      try {
-        const response = await axios.post(
-          'http://131.153.159.15:7100',
-          {
-            jsonrpc: '2.0',
-            method: 'get_encryption_key',
-            params: {
-              key_id: 15,
-            },
-            id: 1,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        );
-
-        const a = response.data?.result?.encryption_key; // Adjust path based on response structure
-        console.log('encryption key skde', a);
-      } catch (error) {
-        console.error('Error:', error);
-      }
+      //   const a = response.data?.result?.encryption_key; // Adjust path based on response structure
+      //   console.log('encryption key skde', a);
+      // } catch (error) {
+      //   console.error('Error:', error);
+      // }
 
       const dataToEncrypt = JSON.stringify({
-        to: request.params.to,
-        value: serializedTransaction,
-        data: request.params.data,
+        to: parsedTransaction.to + '',
+        value: parsedTransaction.value + '',
+        data: '0x',
       });
 
       const encryptedData = await encryptMessageSkde(
-        skdeParams,
+        skdeParamsStatic,
         dataToEncrypt,
-        encryptionKeySkde,
+        encryptionKeySkdeStatic,
       );
+
+      console.log('dataToEncrypt', dataToEncrypt);
+      console.log('encryptedData', encryptedData);
+
+      const decryptedData = await decryptCipherSkde(
+        skdeParamsStatic,
+        encryptedData,
+        decryptionKeySkdeStatic,
+      );
+      console.log('decryptedData', decryptedData);
 
       const url = 'http://131.153.159.15:3000';
       const encrypted_transaction = {
