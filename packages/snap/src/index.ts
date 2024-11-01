@@ -5,6 +5,7 @@ import { english, generateMnemonic, mnemonicToAccount } from 'viem/accounts';
 import { createWalletClient, http, parseTransaction } from 'viem';
 import { holesky } from 'viem/chains';
 import { toHex, parseUnits } from 'viem/utils';
+import axios from 'axios';
 
 import { encryptMessage as encryptMessageSkde } from './skde';
 
@@ -69,8 +70,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       });
 
       console.log('signature', signature);
+      console.log('hello world');
 
-      // const skdeParams = {
+      // const skdeParamsStatic = {
       //   n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
       //   g: '4',
       //   t: 4,
@@ -80,57 +82,63 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       // const messageSkde = JSON.stringify(parsedTransaction);
 
-      // const encryptionKeySkde = {
+      // const encryptionKeySkdeStatic = {
       //   pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
       // };
 
       // const cipherTextSkde = await encryptMessageSkde(
-      //   skdeParams,
+      //   skdeParamsStatic,
       //   messageSkde,
-      //   encryptionKeySkde,
+      //   encryptionKeySkdeStatic,
       // );
 
       let skdeParams;
       let encryptionKeySkde;
 
       try {
-        const response = await fetch('http://131.153.159.15:7100', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          'http://131.153.159.15:7100',
+          {
             jsonrpc: '2.0',
             method: 'get_skde_params',
             params: {
               key_id: 579,
             },
             id: 1,
-          }),
-        }).then(async (res) => readStream(res));
-        skdeParams = response?.skde_params;
-        console.log(skdeParams);
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        skdeParams = response.data.result.skde_params;
+        console.log('skde params', skdeParams);
       } catch (error) {
         console.error('Error:', error);
       }
 
       try {
-        const response = await fetch('http://131.153.159.15:7100', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          'http://131.153.159.15:7100',
+          {
             jsonrpc: '2.0',
             method: 'get_encryption_key',
             params: {
               key_id: 15,
             },
             id: 1,
-          }),
-        }).then(async (res) => readStream(res));
-        encryptionKeySkde = response?.encryption_key;
-        console.log(encryptionKeySkde);
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        const a = response.data?.result?.encryption_key; // Adjust path based on response structure
+        console.log('encryption key skde', a);
       } catch (error) {
         console.error('Error:', error);
       }
