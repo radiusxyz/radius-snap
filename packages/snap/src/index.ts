@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-import {
-  english,
-  generateMnemonic,
-  mnemonicToAccount,
-  privateKeyToAccount,
-} from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { createWalletClient, http, parseTransaction } from 'viem';
 import { holesky } from 'viem/chains';
 import { toHex, parseUnits } from 'viem/utils';
@@ -39,6 +34,8 @@ export async function readStream(res: any) {
  * @throws If the request method is not valid for this snap.
  */
 
+let account;
+
 export const onRpcRequest: OnRpcRequestHandler = async ({
   origin,
   request,
@@ -50,26 +47,39 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         method: 'snap_manageState',
         params: { operation: 'get' },
       });
-      return persistedData;
+
+      if (!persistedData || !persistedData.account) return null;
+
+      account = persistedData.account;
+
+      console.log('account', account.address);
+      return account.address;
     }
     case 'generate': {
-      const mnemonic = generateMnemonic(english);
-      console.log(mnemonic);
+      const privateKey = generatePrivateKey();
+      account = privateKeyToAccount(privateKey);
+      console.log(account.address);
 
-      // guard ensure sample hockey fuel habit chair sport later neither water nephew
-      const account = mnemonicToAccount(
-        'guard ensure sample hockey fuel habit chair sport later neither water nephew',
-      );
-      console.log(account);
-      return account;
+      await snap.request({
+        method: 'snap_manageState',
+        params: {
+          operation: 'update',
+          newState: { account: account },
+        },
+      });
+      return account.address;
     }
     case 'import': {
-      const account = privateKeyToAccount(
-        '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-      );
-      return account;
+      account = privateKeyToAccount(request.params.privateKey);
+      await snap.request({
+        method: 'snap_manageState',
+        params: {
+          operation: 'update',
+          newState: { account: account },
+        },
+      });
+      return account.address;
     }
-
     case 'send': {
       const walletClient = createWalletClient({
         chain: holesky,

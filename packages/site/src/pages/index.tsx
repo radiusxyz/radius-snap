@@ -163,6 +163,33 @@ const Index = () => {
   };
 
   const createClickHandler = (func: string, params?: any) => async () => {
+    if (func === 'load') {
+      console.log('Sending Transaction');
+      try {
+        const response = await handleClick(func, params);
+        console.log("Response from 'load' function", response);
+      } catch (error) {
+        console.error('Error loading an account from storage', error);
+      }
+    }
+    if (func === 'generate') {
+      console.log('Sending Transaction');
+      try {
+        const response = await handleClick(func, params);
+        console.log("Response from 'generate' function", response);
+      } catch (error) {
+        console.error('Error generating an account', error);
+      }
+    }
+    if (func === 'import') {
+      console.log('Sending Transaction');
+      try {
+        const response = await handleClick(func, params);
+        console.log("Response from 'import' function", response);
+      } catch (error) {
+        console.error('Error importing an account', error);
+      }
+    }
     if (func === 'send') {
       console.log('Sending Transaction');
       try {
@@ -284,7 +311,7 @@ const Index = () => {
               />
 
               <PvdeButton
-                onClick={createClickHandler('import')}
+                onClick={createClickHandler('import', { privateKey })}
                 disabled={!installedSnap}
               >
                 Import{' '}
