@@ -1,46 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { createWalletClient, http, parseTransaction } from 'viem';
+import { holesky } from 'viem/chains';
+import { toHex, parseUnits } from 'viem/utils';
+import axios from 'axios';
 
 import {
-  encryptMessage,
-  fetchEncryptionProvingKey,
-  fetchEncryptionZkpParam,
-  fetchTimeLockPuzzleProvingKey,
-  fetchTimeLockPuzzleZkpParam,
-  generateEncryptionProof,
-  generateSymmetricKey,
-  generateTimeLockPuzzle,
-  generateTimeLockPuzzleParam,
-  generateTimeLockPuzzleProof,
-} from './pvde';
-import {
-  decryptCipher as decryptCipherSkde,
   encryptMessage as encryptMessageSkde,
+  decryptCipher as decryptCipherSkde,
 } from './skde';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable camelcase */
-// pvde.js
 
-function uint8ArrayToBase64(uint8Array) {
-  let binaryString = '';
-  for (let i = 0; i < uint8Array.length; i++) {
-    binaryString += String.fromCharCode(uint8Array[i]);
-  }
-  return btoa(binaryString); // btoa encodes the string to Base64
-}
-
-function base64ToUint8Array(base64String) {
-  const binaryString = atob(base64String); // atob decodes the Base64 string
-  const len = binaryString.length;
-  const uint8Array = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    uint8Array[i] = binaryString.charCodeAt(i);
-  }
-  return uint8Array;
+export async function readStream(res: any) {
+  const bytes = await res.arrayBuffer();
+  const uint8bytes = new Uint8Array(bytes);
+  return uint8bytes;
 }
 
 /**
@@ -54,149 +34,281 @@ function base64ToUint8Array(base64String) {
  * @throws If the request method is not valid for this snap.
  */
 
+let account;
+
 export const onRpcRequest: OnRpcRequestHandler = async ({
   origin,
   request,
 }) => {
   switch (request.method) {
-    // Expose a "greeting" JSON-RPC method to dapps.
-    case 'generateTimeLockPuzzleParam': {
-      return generateTimeLockPuzzleParam();
-    }
-    case 'generateTimeLockPuzzle': {
-      console.log('hello world');
-      return generateTimeLockPuzzle(request.params);
-    }
-    case 'fetchTimeLockPuzzleZkpParam': {
-      const result = await fetchTimeLockPuzzleZkpParam();
-      const b64 = uint8ArrayToBase64(result);
+    case 'load': {
+      // At a later time, get the stored data.
+      const persistedData = await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'get' },
+      });
 
-      return b64;
-    }
-    case 'fetchTimeLockPuzzleProvingKey': {
-      const result = await fetchTimeLockPuzzleProvingKey();
-      const b64 = uint8ArrayToBase64(result);
-      return b64;
-    }
-    case 'generateTimeLockPuzzleProof': {
-      const {
-        timeLockPuzzleZkpParamB64,
-        timeLockPuzzleProvingKeyB64,
-        timeLockPuzzlePublicInput,
-        timeLockPuzzlePrivateInput,
-        timeLockPuzzleParam,
-      } = request.params;
+      if (!persistedData || !persistedData.account) return null;
 
-      const timeLockPuzzleZkpParam = base64ToUint8Array(
-        timeLockPuzzleZkpParamB64,
+      account = persistedData.account;
+
+      console.log('account', account.address);
+      return account.address;
+    }
+    case 'generate': {
+      const privateKey = generatePrivateKey();
+      account = privateKeyToAccount(privateKey);
+      console.log(account.address);
+
+      await snap.request({
+        method: 'snap_manageState',
+        params: {
+          operation: 'update',
+          newState: { account: account },
+        },
+      });
+      return account.address;
+    }
+    case 'import': {
+      account = privateKeyToAccount(request.params.privateKey);
+      await snap.request({
+        method: 'snap_manageState',
+        params: {
+          operation: 'update',
+          newState: { account: account },
+        },
+      });
+      return account.address;
+    }
+    case 'send': {
+      const walletClient = createWalletClient({
+        chain: holesky,
+        transport: http(),
+      });
+
+      const myRequest = await walletClient.prepareTransactionRequest({
+        account,
+        to: request.params.to,
+        value: parseUnits(request.params.amount, 18),
+      });
+
+      const serializedTransaction = await walletClient.signTransaction(
+        myRequest,
       );
-      const timeLockPuzzleProvingKey = base64ToUint8Array(
-        timeLockPuzzleProvingKeyB64,
-      );
-      const result = await generateTimeLockPuzzleProof(
-        timeLockPuzzleZkpParam,
-        timeLockPuzzleProvingKey,
-        timeLockPuzzlePublicInput,
-        timeLockPuzzlePrivateInput,
-        timeLockPuzzleParam,
-      );
+      console.log('serialized tx', serializedTransaction);
+      const parsedTransaction = parseTransaction(serializedTransaction);
 
-      const b64 = uint8ArrayToBase64(result);
-      return b64;
-    }
-    case 'generateSymmetricKey': {
-      const { k } = request.params;
-      const result = await generateSymmetricKey(k);
-      return result;
-    }
-    case 'encryptMessage': {
-      const { message, encryptionKey } = request.params;
+      console.log('parsed tx', parsedTransaction);
 
-      const result = await encryptMessage(message, encryptionKey);
-      return result;
-    }
+      const signature = await walletClient.sendRawTransaction({
+        serializedTransaction,
+      });
 
-    case 'fetchEncryptionZkpParam': {
-      const result = await fetchEncryptionZkpParam();
-      const b64 = uint8ArrayToBase64(result);
-      return b64;
-    }
-    case 'fetchEncryptionProvingKey': {
-      const result = await fetchEncryptionProvingKey();
-      const b64 = uint8ArrayToBase64(result);
-      return b64;
-    }
-    case 'generateEncryptionProof': {
-      console.log(request.params);
+      console.log('signature', signature);
 
-      const {
-        encryptionZkpParamB64,
-        encryptionProvingKeyB64,
-        encryptionPublicInput,
-        encryptionPrivateInput,
-      } = request.params;
-      const encryptionZkpParam = base64ToUint8Array(encryptionZkpParamB64);
-      const encryptionProvingKey = base64ToUint8Array(encryptionProvingKeyB64);
-      const result = await generateEncryptionProof(
-        encryptionZkpParam,
-        encryptionProvingKey,
-        encryptionPublicInput,
-        encryptionPrivateInput,
-      );
-
-      const b64 = uint8ArrayToBase64(result);
-      return b64;
-    }
-    case 'fetchSkdeParams': {
-      return {
+      const skdeParamsStatic = {
         n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
         g: '4',
         t: 4,
         h: '4294967296',
         max_sequencer_number: '2',
       };
-    }
-    case 'fetchEncryptionKeySkde': {
-      return {
+
+      const messageSkde = 'JSON.stringify(parsedTransaction)';
+
+      const encryptionKeySkdeStatic = {
         pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
       };
-    }
 
-    case 'encryptMessageSkde': {
-      console.log(request.params);
-
-      const { skdeParams, messageSkde, encryptionKeySkde } = request.params;
-
-      const result = await encryptMessageSkde(
-        skdeParams,
-        messageSkde,
-        encryptionKeySkde,
-      );
-
-      return result;
-    }
-
-    case 'fetchDecryptionKeySkde': {
-      return {
+      const decryptionKeySkdeStatic = {
         sk: '38833048300325516141445839739644018404110477961707775037115236576780421892476578378034582536195146817009345764092161668346878367282186498795101059094681709712929905024483143171658282800283336368593335787557451643648363431385562973837024404466434120134771798848006526362428133799287842185760112952945802615179',
       };
-    }
 
-    case 'decryptCipherSkde': {
-      console.log(request.params);
-
-      const { skdeParams, cipherTextSkde, decryptionKeySkde } = request.params;
-
-      const result = await decryptCipherSkde(
-        skdeParams,
-        cipherTextSkde,
-        decryptionKeySkde,
+      const cipherTextSkde = await encryptMessageSkde(
+        skdeParamsStatic,
+        messageSkde,
+        encryptionKeySkdeStatic,
       );
 
-      return result;
+      console.log('hello world');
+      console.log(cipherTextSkde);
+
+      // let skdeParams;
+      // let encryptionKeySkde;
+
+      // try {
+      //   const response = await axios.post(
+      //     'http://131.153.159.15:7100',
+      //     {
+      //       jsonrpc: '2.0',
+      //       method: 'get_skde_params',
+      //       params: {
+      //         key_id: 579,
+      //       },
+      //       id: 1,
+      //     },
+      //     {
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //     },
+      //   );
+
+      //   skdeParams = response.data.result.skde_params;
+      //   console.log('skde params', skdeParams);
+      // } catch (error) {
+      //   console.error('Error:', error);
+      // }
+
+      // try {
+      //   const response = await axios.post(
+      //     'http://131.153.159.15:7100',
+      //     {
+      //       jsonrpc: '2.0',
+      //       method: 'get_encryption_key',
+      //       params: {
+      //         key_id: 15,
+      //       },
+      //       id: 1,
+      //     },
+      //     {
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //     },
+      //   );
+
+      //   const a = response.data?.result?.encryption_key; // Adjust path based on response structure
+      //   console.log('encryption key skde', a);
+      // } catch (error) {
+      //   console.error('Error:', error);
+      // }
+
+      const dataToEncrypt = JSON.stringify({
+        to: parsedTransaction.to + '',
+        value: parsedTransaction.value + '',
+        data: '0x',
+      });
+
+      const encryptedData = await encryptMessageSkde(
+        skdeParamsStatic,
+        dataToEncrypt,
+        encryptionKeySkdeStatic,
+      );
+
+      console.log('dataToEncrypt', dataToEncrypt);
+      console.log('encryptedData', encryptedData);
+
+      const decryptedData = await decryptCipherSkde(
+        skdeParamsStatic,
+        encryptedData,
+        decryptionKeySkdeStatic,
+      );
+      console.log('decryptedData', decryptedData);
+
+      const url = 'http://131.153.159.15:3000';
+      const encrypted_transaction = {
+        jsonrpc: '2.0',
+        method: 'send_encrypted_transaction',
+        params: {
+          rollup_id: 'nodeinfra_rollup',
+          encrypted_transaction: {
+            type: 'skde',
+            data: {
+              transaction_data: {
+                type: 'eth',
+                data: {
+                  encrypted_data: encryptedData,
+                  open_data: {
+                    raw_tx_hash: serializedTransaction,
+                    from: account.address,
+                    nonce: toHex(parsedTransaction.nonce),
+                    gas_price: toHex(parsedTransaction.maxFeePerGas),
+                    gas_limit: toHex(parsedTransaction.gas),
+                    signature: {
+                      r: parsedTransaction.r,
+                      s: parsedTransaction.s,
+                      v: Number(parsedTransaction.v),
+                    },
+                    other: {},
+                  },
+                  plain_data: null,
+                },
+              },
+              key_id: 167330,
+            },
+          },
+        },
+        id: 1,
+      };
+      console.log('hello world');
+      console.log(encrypted_transaction);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(encrypted_transaction),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+      return { result: 'success' };
     }
+
     default: {
       throw new Error('Method not found.');
     }
   }
 };
+
+// send_encrypted_transaction
+
+/* 
+
+{
+    "jsonrpc": "2.0",
+    "method": "send_encrypted_transaction",
+    "params": {
+        "rollup_id": "1",
+        "encrypted_transaction": {
+            "Eth": {
+                "open_data": {
+                    "raw_tx_hash": "0x83b002caeea5a70ec6b94fd2cf71de5321fd3b94e7ce4535aea3028e31f3b10d",
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "nonce": "0x2d4e1f",
+                    "gas_price": "0x67e30ea2",
+                    "gas_limit": "0x100590",
+                    "signature": {
+                        "r": "0x21f06184dd61bd7b87f8d4fc56bc209dbb1a4e0ce3d5cb1e6a56c55f9cf60620",
+                        "s": "0x1e1ae25306ebb1419a41c67db3e511d610fc9a7d83f332b7d7e3c8df951c4a5d",
+                        "v": 38
+                    },
+                    "block_hash": null,
+                    "block_number": null,
+                    "transaction_index": null,
+                    "transaction_type": null,
+                    "access_list": null,
+                    "max_priority_fee_per_gas": null,
+                    "max_fee_per_gas": null,
+                    "chain_id": "0x1",
+                    "other": {}
+                },
+                "encrypted_data": "16525341917024737325106484584322256261727777345172584850240990032472453366384,18488538614982294004435794039081061793350935819653198597435900081569039526077,6230648815369184305007482001088576712654738956149182620393845874603215881273,12401233369897484656358566955886484060734057798739037588129611310041623957115,21175029189302991762795590042455601872266681927727863287009485964694927814973,13821240530790539884852771460044449860040179161171802339242363981012597584540,6260241981239265167567320542523275272327604346343883556153166995075905315900,21462681774056542128505594737226307761395184979782399495385046509460076677449,18520849493129238815139461670727774242450518348518274719598694020770679495800,3509093391818943401296032238951422537722595892671004595967516868839725696816,4857335857986297547659622287291192668127310255940623242216228209336511490714,5093540281459397010638729846867768839561755688234861817584052684138856305482",
+                "pvde_zkp": null
+            }
+        },
+        "time_lock_puzzle": {
+            "o": "24800632767858592699630021229619350340750515295123235515109382632361457959973462631494836542911461609615588445035146262900249613105057866944661823107276982940060681447663919671884062263565619849400305691748347334267117732649085728718857158770735476210710388838267460636764816992049770532127243050113527049841221368366375403619003551212954943237844718315030656359476553325704244754495205727026102328434495054390704815228730971524957467212888158618806421488481437734212884350072085334476673513602143257678445579792357566713658204719868253280227139656685411027713540888689251231536589989270059261228356031016983597592749",
+            "t": 2048,
+            "n": "25195908475657893494027183240048398571429282126204032027777137836043662020707595556264018525880784406918290641249515082189298559149176184502808489120072844992687392807287776735971418347270261896375014971824691165077613379859095700097330459748808428401797429100642458691817195118746121515172654632282216869987549182422433637259085141865462043576798423387184774447920739934236584823824281198163815010674810451660377306056201619676256133844143603833904414952634432190114657544454178424020924616515723350778707749817125772467962926386356373289912154831438167899885040445364023527381951378636564391212010397122822120720357"
+        }
+    },
+    "id": 1
+}
+
+*/

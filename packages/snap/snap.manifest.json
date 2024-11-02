@@ -7,7 +7,7 @@
     "url": "https://github.com/MetaMask/template-snap-monorepo.git"
   },
   "source": {
-    "shasum": "T1XOlO+NjRRYcDoh1lS2pmg/bWJe+1Y/igrfOho/DZI=",
+    "shasum": "1cpJtX8/quTR3RJWQFnEzCpVe5TtgCfRTOOUFKHbUGI=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -24,6 +24,7 @@
     "https://raw.githubusercontent.com/radiusxyz/pvde.js/main/public/data/time_lock_puzzle_zkp_param.data": {}
   },
   "initialPermissions": {
+    "snap_manageState": {},
     "snap_dialog": {},
     "endowment:rpc": {
       "dapps": true,
