@@ -261,6 +261,7 @@ const Index = () => {
                 </LabelBalance>
                 <Input
                   value={from}
+                  readOnly
                   onChange={handleFrom}
                   placeholder="Account address"
                 />
