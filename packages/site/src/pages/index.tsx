@@ -193,6 +193,7 @@ const Index = () => {
       console.log('Sending Transaction');
       try {
         const response = await handleClick(func, params);
+        setFrom(response);
         console.log("Response from 'generate' function", response);
       } catch (error) {
         console.error('Error generating an account', error);
@@ -202,6 +203,7 @@ const Index = () => {
       console.log('Sending Transaction');
       try {
         const response = await handleClick(func, params);
+        setFrom(response);
         console.log("Response from 'import' function", response);
       } catch (error) {
         console.error('Error importing an account', error);
