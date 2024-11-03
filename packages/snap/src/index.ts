@@ -178,8 +178,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       //     },
       //   );
 
-      //   const a = response.data?.result?.encryption_key; // Adjust path based on response structure
-      //   console.log('encryption key skde', a);
+      //   encryptionKeySkde = response.data?.result?.encryption_key; // Adjust path based on response structure
+      //   console.log('encryption key skde', encryptionKeySkde);
       // } catch (error) {
       //   console.error('Error:', error);
       // }
