@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import styled from 'styled-components';
 
@@ -8,10 +8,9 @@ import {
   InstallFlaskButton,
   ReconnectButton,
   Card,
-  RadiusCard,
-  PvdeButton,
-  Input,
+  CustomButton,
 } from '../components';
+import { CustomCard, Input } from '../components/radius/CustomCard';
 import { defaultSnapOrigin } from '../config';
 import {
   useMetaMask,
@@ -108,7 +107,7 @@ const Inputs = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: ${(props) => props.marginTop || '0'};
+  gap: ${(props) => props.gap || '0'};
 `;
 
 const InputContainer = styled.div`
@@ -123,8 +122,9 @@ const LabelBalance = styled.div`
 `;
 
 const Index = () => {
+  const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [amount, setAmount] = useState(null);
+  const [amount, setAmount] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const handleAmount = (changeEvent: ChangeEvent<HTMLInputElement>) => {
     changeEvent.preventDefault();
@@ -138,6 +138,10 @@ const Index = () => {
     }
 
     setAmount(inputValue);
+  };
+  const handleFrom = (changeEvent: ChangeEvent<HTMLInputElement>) => {
+    changeEvent.preventDefault();
+    setFrom(changeEvent.target.value);
   };
   const handleTo = (changeEvent: ChangeEvent<HTMLInputElement>) => {
     changeEvent.preventDefault();
@@ -158,6 +162,19 @@ const Index = () => {
     ? isFlask
     : snapsDetected;
 
+  useEffect(() => {
+    const loadAccount = async () => {
+      try {
+        const response = await handleClick('load');
+        console.log("Response from 'load' function", response);
+        setFrom(response);
+      } catch (error) {
+        console.error('Error loading an account from storage', error);
+      }
+    };
+    loadAccount();
+  }, [isMetaMaskReady]);
+
   const handleClick = async (func: string, params?: any) => {
     return await invokeSnap({ method: func, params });
   };
@@ -176,6 +193,7 @@ const Index = () => {
       console.log('Sending Transaction');
       try {
         const response = await handleClick(func, params);
+        setFrom(response);
         console.log("Response from 'generate' function", response);
       } catch (error) {
         console.error('Error generating an account', error);
@@ -185,6 +203,7 @@ const Index = () => {
       console.log('Sending Transaction');
       try {
         const response = await handleClick(func, params);
+        setFrom(response);
         console.log("Response from 'import' function", response);
       } catch (error) {
         console.error('Error importing an account', error);
@@ -206,9 +225,7 @@ const Index = () => {
       <Heading>
         Welcome to <Span>Radius Snap</Span>
       </Heading>
-      <Subtitle>
-        Get started by editing <code>src/index.tsx</code>
-      </Subtitle>
+
       <CardContainer>
         {error && (
           <ErrorMessage>
@@ -225,62 +242,11 @@ const Index = () => {
             }}
           />
         )}
-        {!installedSnap && (
-          <Card
-            content={{
-              title: 'Connect',
-              description:
-                'Get started by connecting to and installing the PVDE snap.',
-              button: (
-                <ConnectButton
-                  onClick={requestSnap}
-                  disabled={!isMetaMaskReady}
-                />
-              ),
-            }}
-            disabled={!isMetaMaskReady}
-          />
-        )}
-        {shouldDisplayReconnectButton(installedSnap) && (
-          <Card
-            content={{
-              title: 'Reconnect',
-              description:
-                'While connected to a local running snap this button will always be displayed in order to update the snap if a change is made.',
-              button: (
-                <ReconnectButton
-                  onClick={requestSnap}
-                  disabled={!installedSnap}
-                />
-              ),
-            }}
-            disabled={!installedSnap}
-          />
-        )}
-        <RadiusCard
+        <CustomCard
           content={{
-            title: 'Load existing',
+            title: from ? 'Transact' : 'Setup Account',
             description:
-              'Load your private key from local storage, if you already have created',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('load')}
-                disabled={!installedSnap}
-              >
-                Load from local storage
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        ></RadiusCard>
-        <RadiusCard
-          content={{
-            title: 'Generate Private Key',
+              from && 'Request a transaction to be sent to the network.',
           }}
           disabled={!installedSnap}
           fullWidth={
@@ -289,86 +255,86 @@ const Index = () => {
             !shouldDisplayReconnectButton(installedSnap)
           }
         >
-          <Inputs marginTop="120px">
-            <InputContainer>
-              <PvdeButton
-                onClick={createClickHandler('generate')}
-                disabled={!installedSnap}
-              >
-                Generate new one
-              </PvdeButton>
-            </InputContainer>
+          {from ? (
+            <Inputs>
+              <InputContainer>
+                <LabelBalance>
+                  <span>From</span>
+                </LabelBalance>
+                <Input
+                  value={from}
+                  readOnly
+                  onChange={handleFrom}
+                  placeholder="Account address"
+                />
+              </InputContainer>
+              <InputContainer>
+                <LabelBalance>
+                  <span> To</span>
+                </LabelBalance>
+                <Input
+                  value={to}
+                  onChange={handleTo}
+                  placeholder="Enter recipient address"
+                />
+              </InputContainer>
+              <InputContainer>
+                <LabelBalance>
+                  <span> Amount</span>
+                  {/* <span>Balance: 0</span> */}
+                </LabelBalance>
+                <Input
+                  type="text"
+                  value={amount}
+                  onChange={handleAmount}
+                  placeholder="Enter a number"
+                />
+              </InputContainer>
+              <InputContainer>
+                <LabelBalance>
+                  <span> Data</span>
+                </LabelBalance>
+                <Input type="text" placeholder="0x" readOnly />
+              </InputContainer>
+              <InputContainer>
+                <CustomButton
+                  marginTop="40px"
+                  onClick={createClickHandler('send', { to, amount })}
+                  disabled={!installedSnap}
+                >
+                  Send
+                </CustomButton>
+              </InputContainer>
+            </Inputs>
+          ) : (
+            <Inputs gap="70px">
+              <InputContainer>
+                <CustomButton
+                  onClick={createClickHandler('generate')}
+                  disabled={!installedSnap}
+                >
+                  Generate a new account{' '}
+                </CustomButton>
+              </InputContainer>
 
-            <InputContainer>
-              <LabelBalance>
-                <span> Import existing one</span>
-              </LabelBalance>
-              <Input
-                type="text"
-                value={privateKey}
-                onChange={handlePrivateKey}
-                placeholder="Enter your private key"
-              />
+              <InputContainer>
+                <Input
+                  type="text"
+                  value={privateKey}
+                  onChange={handlePrivateKey}
+                  placeholder="Enter your private key"
+                />
 
-              <PvdeButton
-                onClick={createClickHandler('import', { privateKey })}
-                disabled={!installedSnap}
-              >
-                Import{' '}
-              </PvdeButton>
-            </InputContainer>
-          </Inputs>
-        </RadiusCard>
-        <RadiusCard
-          content={{
-            title: 'Transact',
-            description: 'Request a transaction to be sent to the network.',
-            button: (
-              <PvdeButton
-                onClick={createClickHandler('send', { to, amount })}
-                disabled={!installedSnap}
-              >
-                Send
-              </PvdeButton>
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        >
-          <Inputs>
-            <InputContainer>
-              <LabelBalance>
-                <span> To</span>
-              </LabelBalance>
-              <Input
-                value={to}
-                onChange={handleTo}
-                placeholder="Enter recipient address"
-              />
-            </InputContainer>
-            <InputContainer>
-              <LabelBalance>
-                <span> Amount</span> <span>Balance: 0</span>
-              </LabelBalance>
-              <Input
-                type="text"
-                value={amount}
-                onChange={handleAmount}
-                placeholder="Enter a number"
-              />
-            </InputContainer>
-            <InputContainer>
-              <LabelBalance>
-                <span> Data</span>
-              </LabelBalance>
-              <Input type="text" placeholder="0x" readOnly />
-            </InputContainer>
-          </Inputs>
-        </RadiusCard>
+                <CustomButton
+                  onClick={createClickHandler('import', { privateKey })}
+                  disabled={!installedSnap}
+                >
+                  Or import from your private key{' '}
+                </CustomButton>
+              </InputContainer>
+            </Inputs>
+          )}
+        </CustomCard>
       </CardContainer>
       <CardContainer>
         <Notice>

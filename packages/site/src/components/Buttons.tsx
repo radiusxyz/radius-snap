@@ -44,6 +44,16 @@ const Button = styled.button`
   }
 `;
 
+const RadiusButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: ${(props) => props.marginTop || 'auto'};
+  ${({ theme }) => theme.mediaQueries.small} {
+    width: 100%;
+  }
+`;
+
 const ButtonText = styled.span`
   margin-left: 1rem;
 `;
@@ -99,8 +109,8 @@ export const SendHelloButton = (props: ComponentProps<typeof Button>) => {
   return <Button {...props}>Send message</Button>;
 };
 
-export const PvdeButton = (props: ComponentProps<typeof Button>) => {
-  return <Button {...props}>{props.children}</Button>;
+export const CustomButton = (props: ComponentProps<typeof Button>) => {
+  return <RadiusButton {...props}>{props.children}</RadiusButton>;
 };
 
 export const HeaderButtons = () => {

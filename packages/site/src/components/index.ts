@@ -6,4 +6,5 @@ export * from './MetaMask';
 export * from './PoweredBy';
 export * from './SnapLogo';
 export * from './Toggle';
-export * from './PvdeCard';
+export * from './RadiusCard';
+export * from './radius/CustomCard';
