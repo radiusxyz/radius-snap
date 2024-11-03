@@ -86,6 +86,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         transport: http(),
       });
 
+      // account = privateKeyToAccount(
+      //   '0x50b097861f7378f77527168837aeeadf24ebde93296a4c12e0a7a28557404959',
+      // );
+
       const myRequest = await walletClient.prepareTransactionRequest({
         account,
         to: request.params.to,
@@ -133,56 +137,57 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       console.log('hello world');
       console.log(cipherTextSkde);
 
-      // let skdeParams;
-      // let encryptionKeySkde;
+      let skdeParams;
+      let encryptionKeySkde;
+      let decryptionKeySkde;
 
-      // try {
-      //   const response = await axios.post(
-      //     'http://131.153.159.15:7100',
-      //     {
-      //       jsonrpc: '2.0',
-      //       method: 'get_skde_params',
-      //       params: {
-      //         key_id: 579,
-      //       },
-      //       id: 1,
-      //     },
-      //     {
-      //       headers: {
-      //         'Content-Type': 'application/json',
-      //       },
-      //     },
-      //   );
+      try {
+        const response = await axios.post(
+          'http://131.153.159.15:7100',
+          {
+            jsonrpc: '2.0',
+            method: 'get_skde_params',
+            params: {
+              key_id: 579,
+            },
+            id: 1,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
 
-      //   skdeParams = response.data.result.skde_params;
-      //   console.log('skde params', skdeParams);
-      // } catch (error) {
-      //   console.error('Error:', error);
-      // }
+        skdeParams = response.data.result.skde_params;
+        console.log('skde params', skdeParams);
+      } catch (error) {
+        console.error('Error:', error);
+      }
 
-      // try {
-      //   const response = await axios.post(
-      //     'http://131.153.159.15:7100',
-      //     {
-      //       jsonrpc: '2.0',
-      //       method: 'get_encryption_key',
-      //       params: {
-      //         key_id: 15,
-      //       },
-      //       id: 1,
-      //     },
-      //     {
-      //       headers: {
-      //         'Content-Type': 'application/json',
-      //       },
-      //     },
-      //   );
+      try {
+        const response = await axios.post(
+          'http://131.153.159.15:7100',
+          {
+            jsonrpc: '2.0',
+            method: 'get_encryption_key',
+            params: {
+              key_id: 15,
+            },
+            id: 1,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
 
-      //   encryptionKeySkde = response.data?.result?.encryption_key; // Adjust path based on response structure
-      //   console.log('encryption key skde', encryptionKeySkde);
-      // } catch (error) {
-      //   console.error('Error:', error);
-      // }
+        encryptionKeySkde = response.data?.result?.encryption_key; // Adjust path based on response structure
+        console.log('encryption key skde', encryptionKeySkde);
+      } catch (error) {
+        console.error('Error:', error);
+      }
 
       const dataToEncrypt = JSON.stringify({
         to: parsedTransaction.to + '',
@@ -191,18 +196,42 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       });
 
       const encryptedData = await encryptMessageSkde(
-        skdeParamsStatic,
+        skdeParams,
         dataToEncrypt,
-        encryptionKeySkdeStatic,
+        encryptionKeySkde,
       );
 
       console.log('dataToEncrypt', dataToEncrypt);
       console.log('encryptedData', encryptedData);
 
+      try {
+        const response = await axios.post(
+          'http://131.153.159.15:7100',
+          {
+            jsonrpc: '2.0',
+            method: 'get_decryption_key',
+            params: {
+              key_id: 15,
+            },
+            id: 1,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        decryptionKeySkde = response.data?.result?.decryption_key; // Adjust path based on response structure
+        console.log('decryption key skde', decryptionKeySkde);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+
       const decryptedData = await decryptCipherSkde(
-        skdeParamsStatic,
+        skdeParams,
         encryptedData,
-        decryptionKeySkdeStatic,
+        decryptionKeySkde,
       );
       console.log('decryptedData', decryptedData);
 
