@@ -29,6 +29,11 @@ yarn install && yarn start
 
 To enable Snap functionality, use MetaMask Flask (a developer version of MetaMask that supports Snaps).
 
+## Architecture
+
+![image](https://github.com/user-attachments/assets/111c96a3-c377-4f0d-8366-bf40f604a1b0)
+
+
 ## Front-End Interface
 
 The front-end provides an interactive interface for managing accounts and sending transactions securely through MetaMask Flask.
