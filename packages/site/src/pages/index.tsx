@@ -36,6 +36,22 @@ const Container = styled.div`
   }
 `;
 
+const Alert = styled.div`
+  position: absolute;
+  width: auto;
+  top: 100px;
+  height: 45px;
+  display: flex;
+  font-weight: 500;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.4rem;
+  padding: 10px 20px;
+
+  background-color: ${(props) =>
+    props.status === 'success' ? '#6f4cff' : 'red'};
+`;
+
 const Heading = styled.h1`
   margin-top: 0;
   margin-bottom: 2.4rem;
@@ -126,6 +142,8 @@ const Index = () => {
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
   const [privateKey, setPrivateKey] = useState('');
+  const [alert, setAlert] = useState('neutral');
+  const [balance, setBalance] = useState(0);
   const handleAmount = (changeEvent: ChangeEvent<HTMLInputElement>) => {
     changeEvent.preventDefault();
     let inputValue = event.target.value;
@@ -163,17 +181,64 @@ const Index = () => {
     : snapsDetected;
 
   useEffect(() => {
+    if (!isMetaMaskReady) {
+      return;
+    }
     const loadAccount = async () => {
       try {
         const response = await handleClick('load');
         console.log("Response from 'load' function", response);
         setFrom(response);
+        if (response) {
+          setAlert('loaded');
+        } else {
+          setAlert('failedToLoad');
+        }
       } catch (error) {
         console.error('Error loading an account from storage', error);
       }
     };
     loadAccount();
   }, [isMetaMaskReady]);
+
+  useEffect(() => {
+    if (!isMetaMaskReady) {
+      return;
+    }
+    const requestPermissions = async () => {
+      await window.ethereum.request({
+        method: 'wallet_requestPermissions',
+        params: [
+          {
+            eth_accounts: {},
+          },
+        ],
+      });
+    };
+    requestPermissions();
+  }, [isMetaMaskReady]);
+
+  useEffect(() => {
+    if (!isMetaMaskReady) {
+      return;
+    }
+    const getBalance = async () => {
+      if (!from) {
+        return;
+      }
+      const response = await window.ethereum.request({
+        method: 'eth_getBalance',
+        params: [from, 'latest'],
+      });
+      console.log('this is the response', response);
+      if (response) {
+        let weiValue = BigInt(response); // Convert hex to BigInt
+        let ethValue = Number(weiValue) / 1e18;
+        setBalance(ethValue);
+      } // Divide by 10^18 to convert Wei to Ether
+    };
+    getBalance();
+  }, [installedSnap, from, isMetaMaskReady]);
 
   const handleClick = async (func: string, params?: any) => {
     return await invokeSnap({ method: func, params });
@@ -194,6 +259,7 @@ const Index = () => {
       try {
         const response = await handleClick(func, params);
         setFrom(response);
+        setAlert('generated');
         console.log("Response from 'generate' function", response);
       } catch (error) {
         console.error('Error generating an account', error);
@@ -204,6 +270,7 @@ const Index = () => {
       try {
         const response = await handleClick(func, params);
         setFrom(response);
+        setAlert('imported');
         console.log("Response from 'import' function", response);
       } catch (error) {
         console.error('Error importing an account', error);
@@ -222,6 +289,28 @@ const Index = () => {
 
   return (
     <Container>
+      {alert === 'loaded' && (
+        <Alert status={'success'}>Loaded account from the local storage</Alert>
+      )}
+      {alert === 'failedToLoad' && (
+        <Alert status={'fail'}>There is no account in the local storage</Alert>
+      )}
+      {alert === 'generated' && (
+        <Alert status={'success'}>
+          Generated a new account and saved it to the local storage
+        </Alert>
+      )}
+      {alert === 'imported' && (
+        <Alert status={'success'}>
+          Imported an account and saved it to the local storage
+        </Alert>
+      )}
+      {alert === 'failedToImport' && (
+        <Alert status={'fail'}>
+          Failed to import an account from the private key
+        </Alert>
+      )}
+
       <Heading>
         Welcome to <Span>Radius Snap</Span>
       </Heading>
@@ -281,7 +370,7 @@ const Index = () => {
               <InputContainer>
                 <LabelBalance>
                   <span> Amount</span>
-                  {/* <span>Balance: 0</span> */}
+                  <span>Balance: {balance.toFixed(6)} ETH</span>
                 </LabelBalance>
                 <Input
                   type="text"
