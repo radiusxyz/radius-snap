@@ -31,7 +31,7 @@ To enable Snap functionality, use MetaMask Flask (a developer version of MetaMas
 
 ## Architecture
 
-![image](https://github.com/user-attachments/assets/37673be5-a572-4dff-815c-71c7b6bfd4bb)
+![image](https://github.com/user-attachments/assets/5a16e7f3-56c1-4dff-965f-4e8faabbc308)
 
 1. **Connecting with Snap:**  
    The user connects to the Snap through MetaMask’s default permissions window. After connecting, they have the option to either generate a new private key or import an existing one. Once the Snap has created the account, the user is ready to proceed with transactions.
