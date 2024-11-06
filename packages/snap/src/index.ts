@@ -2,7 +2,13 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { createWalletClient, http, parseTransaction } from 'viem';
+import {
+  createWalletClient,
+  defineChain,
+  http,
+  parseTransaction,
+  keccak256,
+} from 'viem';
 import { holesky } from 'viem/chains';
 import { toHex, parseUnits } from 'viem/utils';
 import axios from 'axios';
@@ -34,7 +40,17 @@ export async function readStream(res: any) {
  * @throws If the request method is not valid for this snap.
  */
 
-let account;
+let anvil = defineChain({
+  id: 1001,
+  name: 'Anvil',
+  nativeCurrency: { name: 'Anvil Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: ['http://192.168.12.68:8123'],
+    },
+  },
+  testnet: true,
+});
 
 export const onRpcRequest: OnRpcRequestHandler = async ({
   origin,
@@ -50,65 +66,84 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       if (!persistedData || !persistedData.account) return null;
 
-      account = persistedData.account;
+      const privateKey = persistedData.privateKey;
+      const account = privateKeyToAccount(privateKey);
 
       console.log('account', account.address);
       return account.address;
     }
     case 'generate': {
       const privateKey = generatePrivateKey();
-      account = privateKeyToAccount(privateKey);
       console.log(account.address);
 
       await snap.request({
         method: 'snap_manageState',
         params: {
           operation: 'update',
-          newState: { account: account },
+          newState: { privateKey: privateKey },
         },
       });
+      const account = privateKeyToAccount(privateKey);
       return account.address;
     }
     case 'import': {
-      account = privateKeyToAccount(request.params.privateKey);
       await snap.request({
         method: 'snap_manageState',
         params: {
           operation: 'update',
-          newState: { account: account },
+          newState: { privateKey: request.params.privateKey },
         },
       });
+      const account = privateKeyToAccount(request.params.privateKey);
       return account.address;
     }
     case 'send': {
+      const persistedData = await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'get' },
+      });
+      if (!persistedData || !persistedData.privateKey) {
+        throw new Error(
+          'Account not found. Please load or generate an account first.',
+        );
+      }
+      const account = privateKeyToAccount(persistedData.privateKey);
+      console.log('account', account);
+
       const walletClient = createWalletClient({
-        chain: holesky,
+        chain: anvil,
         transport: http(),
       });
-
-      // account = privateKeyToAccount(
-      //   '0x50b097861f7378f77527168837aeeadf24ebde93296a4c12e0a7a28557404959',
-      // );
-
       const myRequest = await walletClient.prepareTransactionRequest({
         account,
         to: request.params.to,
         value: parseUnits(request.params.amount, 18),
       });
 
+      console.log('myRequest', myRequest);
+
       const serializedTransaction = await walletClient.signTransaction(
         myRequest,
       );
-      console.log('serialized tx', serializedTransaction);
+
+      const transactionHash = keccak256(serializedTransaction);
+      console.log('serialized tx jaem', serializedTransaction);
       const parsedTransaction = parseTransaction(serializedTransaction);
+      // const transaction = { ...parsedTransaction };
+      // const encodedTransaction = encodeTransaction(transaction);
 
-      console.log('parsed tx', parsedTransaction);
+      console.log('stompesi - parsedTransaction', parsedTransaction);
+      console.log('stompesi - serializedTransaction', serializedTransaction);
+      // Hash the encoded transaction
 
-      const signature = await walletClient.sendRawTransaction({
-        serializedTransaction,
-      });
+      console.log('parsedTransaction jaem', parsedTransaction);
+      console.log('transactionHash jaem', transactionHash);
 
-      console.log('signature', signature);
+      // const signature = await walletClient.sendRawTransaction({
+      //   serializedTransaction,
+      // });
+
+      // console.log('signature', signature);
 
       const skdeParamsStatic = {
         n: '109108784166676529682340577929498188950239585527883687884827626040722072371127456712391033422811328348170518576414206624244823392702116014678887602655605057984874271545556188865755301275371611259397284800785551682318694176857633188036311000733221068448165870969366710007572931433736793827320953175136545355129',
@@ -118,7 +153,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         max_sequencer_number: '2',
       };
 
-      const messageSkde = 'JSON.stringify(parsedTransaction)';
+      // console.log('parsedTransaction', parsedTransaction);
+
+      // const messageSkdeStatic = JSON.stringify(parsedTransaction);
 
       const encryptionKeySkdeStatic = {
         pk: '27897411317866240410600830526788165981341969904039758194675272671868652866892274441298243014317800177611419642993059565060538386730472765976439751299066279239018615809165217144853299923809516494049479159549907327351509242281465077907977695359158281231729142725042643997952251325328973964444619144348848423785',
@@ -128,27 +165,30 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         sk: '38833048300325516141445839739644018404110477961707775037115236576780421892476578378034582536195146817009345764092161668346878367282186498795101059094681709712929905024483143171658282800283336368593335787557451643648363431385562973837024404466434120134771798848006526362428133799287842185760112952945802615179',
       };
 
-      const cipherTextSkde = await encryptMessageSkde(
-        skdeParamsStatic,
-        messageSkde,
-        encryptionKeySkdeStatic,
-      );
+      // const cipherTextSkdeStatic = await encryptMessageSkde(
+      //   skdeParamsStatic,
+      //   messageSkdeStatic,
+      //   encryptionKeySkdeStatic,
+      // );
 
-      console.log('hello world');
-      console.log(cipherTextSkde);
+      // console.log('hello world');
+      // console.log(cipherTextSkdeStatic);
 
       let skdeParams;
       let encryptionKeySkde;
       let decryptionKeySkde;
+      let keyId;
 
+      const sequencerRpcUrl = 'http://192.168.12.170:3000';
+      const dkgServiceRpcUrl = 'http://192.168.12.170:7100';
       try {
         const response = await axios.post(
-          'http://131.153.159.15:7100',
+          dkgServiceRpcUrl,
           {
             jsonrpc: '2.0',
             method: 'get_skde_params',
             params: {
-              key_id: 579,
+              key_id: 2,
             },
             id: 1,
           },
@@ -167,13 +207,11 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       try {
         const response = await axios.post(
-          'http://131.153.159.15:7100',
+          dkgServiceRpcUrl,
           {
             jsonrpc: '2.0',
-            method: 'get_encryption_key',
-            params: {
-              key_id: 15,
-            },
+            method: 'get_latest_encryption_key',
+            params: {},
             id: 1,
           },
           {
@@ -183,17 +221,22 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
           },
         );
 
-        encryptionKeySkde = response.data?.result?.encryption_key; // Adjust path based on response structure
-        console.log('encryption key skde', encryptionKeySkde);
+        encryptionKeySkde = response.data?.result?.encryption_key;
+        keyId = response.data?.result?.key_id;
+        // console.log('hello world');
+        // console.log('keyId', keyId);
+        // console.log('encryption key skde', encryptionKeySkde);
       } catch (error) {
         console.error('Error:', error);
       }
 
       const dataToEncrypt = JSON.stringify({
-        to: parsedTransaction.to + '',
-        value: parsedTransaction.value + '',
         data: '0x',
+        to: parsedTransaction.to + '',
+        value: toHex(parsedTransaction.value),
       });
+
+      // console.log('encryptedData stompesi', dataToEncrypt);
 
       const encryptedData = await encryptMessageSkde(
         skdeParams,
@@ -201,17 +244,16 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         encryptionKeySkde,
       );
 
-      console.log('dataToEncrypt', dataToEncrypt);
-      console.log('encryptedData', encryptedData);
+      // console.log('after encryption stompesi', encryptedData);
 
       try {
         const response = await axios.post(
-          'http://131.153.159.15:7100',
+          dkgServiceRpcUrl,
           {
             jsonrpc: '2.0',
             method: 'get_decryption_key',
             params: {
-              key_id: 15,
+              key_id: keyId,
             },
             id: 1,
           },
@@ -233,14 +275,15 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         encryptedData,
         decryptionKeySkde,
       );
-      console.log('decryptedData', decryptedData);
+      // console.log('decryptedDataStatic', decryptedData);
 
-      const url = 'http://131.153.159.15:3000';
+      console.log('serializedTransaction hashhhh', serializedTransaction);
+
       const encrypted_transaction = {
         jsonrpc: '2.0',
         method: 'send_encrypted_transaction',
         params: {
-          rollup_id: 'nodeinfra_rollup',
+          rollup_id: 'rollup_id',
           encrypted_transaction: {
             type: 'skde',
             data: {
@@ -249,10 +292,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
                 data: {
                   encrypted_data: encryptedData,
                   open_data: {
-                    raw_tx_hash: serializedTransaction,
+                    raw_tx_hash: transactionHash,
                     from: account.address,
                     nonce: toHex(parsedTransaction.nonce),
-                    gas_price: toHex(parsedTransaction.maxFeePerGas),
+                    gas_price: toHex(parsedTransaction.gasPrice),
                     gas_limit: toHex(parsedTransaction.gas),
                     signature: {
                       r: parsedTransaction.r,
@@ -264,17 +307,17 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
                   plain_data: null,
                 },
               },
-              key_id: 167330,
+              key_id: keyId,
             },
           },
         },
         id: 1,
       };
       console.log('hello world');
-      console.log(encrypted_transaction);
+      // console.log(encrypted_transaction);
 
       try {
-        const response = await fetch(url, {
+        const response = await fetch(sequencerRpcUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

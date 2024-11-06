@@ -181,7 +181,7 @@ const Index = () => {
     : snapsDetected;
 
   useEffect(() => {
-    if (!isMetaMaskReady) {
+    if (!isMetaMaskReady || !Boolean(installedSnap)) {
       return;
     }
     const loadAccount = async () => {
@@ -199,46 +199,46 @@ const Index = () => {
       }
     };
     loadAccount();
-  }, [isMetaMaskReady]);
+  }, [isMetaMaskReady, installedSnap]);
 
-  useEffect(() => {
-    if (!isMetaMaskReady) {
-      return;
-    }
-    const requestPermissions = async () => {
-      await window.ethereum.request({
-        method: 'wallet_requestPermissions',
-        params: [
-          {
-            eth_accounts: {},
-          },
-        ],
-      });
-    };
-    requestPermissions();
-  }, [isMetaMaskReady]);
+  // useEffect(() => {
+  //   if (!isMetaMaskReady || !Boolean(installedSnap)) {
+  //     return;
+  //   }
+  //   const requestPermissions = async () => {
+  //     await window.ethereum.request({
+  //       method: 'wallet_requestPermissions',
+  //       params: [
+  //         {
+  //           eth_accounts: {},
+  //         },
+  //       ],
+  //     });
+  //   };
+  //   requestPermissions();
+  // }, [isMetaMaskReady, installedSnap]);
 
-  useEffect(() => {
-    if (!isMetaMaskReady) {
-      return;
-    }
-    const getBalance = async () => {
-      if (!from) {
-        return;
-      }
-      const response = await window.ethereum.request({
-        method: 'eth_getBalance',
-        params: [from, 'latest'],
-      });
-      console.log('this is the response', response);
-      if (response) {
-        let weiValue = BigInt(response); // Convert hex to BigInt
-        let ethValue = Number(weiValue) / 1e18;
-        setBalance(ethValue);
-      } // Divide by 10^18 to convert Wei to Ether
-    };
-    getBalance();
-  }, [installedSnap, from, isMetaMaskReady]);
+  // useEffect(() => {
+  //   if (!isMetaMaskReady) {
+  //     return;
+  //   }
+  //   const getBalance = async () => {
+  //     if (!from) {
+  //       return;
+  //     }
+  //     const response = await window.ethereum.request({
+  //       method: 'eth_getBalance',
+  //       params: [from, 'latest'],
+  //     });
+  //     console.log('this is the response', response);
+  //     if (response) {
+  //       let weiValue = BigInt(response); // Convert hex to BigInt
+  //       let ethValue = Number(weiValue) / 1e18;
+  //       setBalance(ethValue);
+  //     } // Divide by 10^18 to convert Wei to Ether
+  //   };
+  //   getBalance();
+  // }, [installedSnap, from, isMetaMaskReady]);
 
   const handleClick = async (func: string, params?: any) => {
     return await invokeSnap({ method: func, params });
@@ -279,6 +279,7 @@ const Index = () => {
     if (func === 'send') {
       console.log('Sending Transaction');
       try {
+        console.log('account', from);
         const response = await handleClick(func, params);
         console.log("Response from 'send' function", response);
       } catch (error) {
@@ -370,7 +371,7 @@ const Index = () => {
               <InputContainer>
                 <LabelBalance>
                   <span> Amount</span>
-                  <span>Balance: {balance.toFixed(6)} ETH</span>
+                  {/* <span>Balance: {balance.toFixed(6)} ETH</span> */}
                 </LabelBalance>
                 <Input
                   type="text"
