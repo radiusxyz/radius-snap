@@ -64,7 +64,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         params: { operation: 'get' },
       });
 
-      if (!persistedData || !persistedData.account) return null;
+      if (!persistedData || !persistedData.privateKey) return null;
 
       const privateKey = persistedData.privateKey;
       const account = privateKeyToAccount(privateKey);
@@ -74,8 +74,6 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     }
     case 'generate': {
       const privateKey = generatePrivateKey();
-      console.log(account.address);
-
       await snap.request({
         method: 'snap_manageState',
         params: {
