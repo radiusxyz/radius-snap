@@ -182,6 +182,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!isMetaMaskReady || !Boolean(installedSnap)) {
+      console.log('MetaMask is not ready');
       return;
     }
     const loadAccount = async () => {
@@ -255,7 +256,6 @@ const Index = () => {
       }
     }
     if (func === 'generate') {
-      console.log('Sending Transaction');
       try {
         const response = await handleClick(func, params);
         setFrom(response);
