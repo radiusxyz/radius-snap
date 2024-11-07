@@ -3,24 +3,24 @@
 /**
  * @param {any} skde_params
  * @param {any} message
- * @param {any} encryption_key
+ * @param {string} encryption_key
  * @returns {any}
  */
-export function encrypt(skde_params: any, message: any, encryption_key: any): any;
+export function encrypt(skde_params: any, message: any, encryption_key: string): any;
 /**
  * @param {any} skde_params
  * @param {any} ciphertext
- * @param {any} decryption_key
+ * @param {string} decryption_key
  * @returns {any}
  */
-export function decrypt(skde_params: any, ciphertext: any, decryption_key: any): any;
+export function decrypt(skde_params: any, ciphertext: any, decryption_key: string): any;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly encrypt: (a: number, b: number, c: number) => number;
-  readonly decrypt: (a: number, b: number, c: number) => number;
+  readonly encrypt: (a: number, b: number, c: number, d: number) => number;
+  readonly decrypt: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
